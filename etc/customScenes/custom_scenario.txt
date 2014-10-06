@@ -1,6 +1,0 @@
-
-general:luamt role:lord 
-general:zhangjiao role:renegade 
-general:daqiao role:rebel 
-general:caiwenji role:loyalist 
-general:simayi role:rebel starter:true 
