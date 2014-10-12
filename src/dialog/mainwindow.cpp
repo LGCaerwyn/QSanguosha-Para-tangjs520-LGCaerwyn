@@ -10,6 +10,7 @@
 #include "window.h"
 #include "pixmapanimation.h"
 #include "record-analysis.h"
+#include "recorder.h"
 #include "audio.h"
 #include "backgroundrunner.h"
 #include "replayer.h"
@@ -72,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     connection_dialog = new ConnectionDialog(this);
     connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
 
-    connect(connection_dialog, SIGNAL(accepted()), this, SLOT(setConsoleStartFalse()));
+	connect(connection_dialog, SIGNAL(accepted()), this, SLOT(setConsoleStartFalse()));
     connect(connection_dialog, SIGNAL(accepted()), this, SLOT(startConnection()));
 
     config_dialog = new ConfigDialog(this);
@@ -81,20 +82,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(config_dialog, SIGNAL(bg_changed()), this, SLOT(changeBackground()));
 
     connect(ui->actionAbout_Qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-    connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
+	connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
 
     StartScene *start_scene = new StartScene;
 
     QList<QAction *> actions;
     actions << ui->actionStart_Server
             << ui->actionStart_Game
-            << ui->actionPC_Console_Start
+			<< ui->actionPC_Console_Start
             << ui->actionReplay
             << ui->actionConfigure
             << ui->actionGeneral_Overview
             << ui->actionCard_Overview
             << ui->actionScenario_Overview
-            << ui->actionAbout
+			<< ui->actionAbout
             << ui->actionAcknowledgement;
 
     foreach (QAction *action, actions)
@@ -167,6 +168,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         event->ignore();
     }
     else {
+        deleteClient();
+
         Sanguosha->blockAllRoomSignals(true);
 
         delete systray;
@@ -250,7 +253,7 @@ void MainWindow::on_actionStart_Server_triggered() {
     connect(ui->actionStart_Game, SIGNAL(triggered()), this, SLOT(startGameInAnotherInstance()));
 
     ui->actionStart_Server->setEnabled(false);
-    ui->actionPC_Console_Start->setEnabled(false);
+	ui->actionPC_Console_Start->setEnabled(false);
     ui->actionReplay->setEnabled(false);
 
     StartScene *start_scene = qobject_cast<StartScene *>(scene);
@@ -280,7 +283,7 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
 
     client->disconnectFromHost();
 
-    static QString link = "http://pan.baidu.com/share/link?shareid=396750&uk=1442992357";
+    static QString link = "http://pan.baidu.com/s/1hq23yfy";
     QString text = tr("Server version is %1, client version is %2 <br/>").arg(server_version).arg(client_version);
     if (server_version > client_version)
         text.append(tr("Your client version is older than the server's, please update it <br/>"));
@@ -294,7 +297,7 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
 }
 
 void MainWindow::startConnection() {
-    if (NULL == m_server && m_consoleStart) {
+	if (NULL == m_server && m_consoleStart) {
         on_actionPC_Console_Start_triggered();
         return;
     }
@@ -399,7 +402,7 @@ void MainWindow::enterRoom() {
     ui->actionStart_Game->setEnabled(false);
     ui->actionStart_Server->setEnabled(false);
 
-    ui->actionPC_Console_Start->setEnabled(false);
+	ui->actionPC_Console_Start->setEnabled(false);
     ui->actionReplay->setEnabled(false);
 
     RoomScene *room_scene = new RoomScene(this);
@@ -435,7 +438,7 @@ void MainWindow::enterRoom() {
         ui->actionDamage_maker->disconnect();
         ui->actionRevive_wand->disconnect();
         ui->actionSend_lowlevel_command->disconnect();
-        ui->actionExecute_script_at_server_side->disconnect();
+		ui->actionExecute_script_at_server_side->disconnect();
     }
 
     connect(room_scene, SIGNAL(restart()), this, SLOT(startConnection()));
@@ -450,7 +453,7 @@ void MainWindow::gotoStartScene() {
     systray = NULL;
 
     m_consoleStart = true;
-    deleteClient();
+	deleteClient();
     RoomSceneInstance = NULL;
 
     if (NULL != m_server) {
@@ -463,7 +466,7 @@ void MainWindow::gotoStartScene() {
     QList<QAction *> actions;
     actions << ui->actionStart_Server
             << ui->actionStart_Game
-            << ui->actionPC_Console_Start
+			<< ui->actionPC_Console_Start
             << ui->actionReplay
             << ui->actionConfigure
             << ui->actionGeneral_Overview
@@ -475,7 +478,7 @@ void MainWindow::gotoStartScene() {
     ui->actionStart_Game->setEnabled(true);
     ui->actionStart_Server->setEnabled(true);
     ui->actionReplay->setEnabled(true);
-    ui->actionPC_Console_Start->setEnabled(true);
+	ui->actionPC_Console_Start->setEnabled(true);
 
     foreach (QAction *action, actions)
         start_scene->addButton(action);
@@ -486,7 +489,7 @@ void MainWindow::gotoStartScene() {
     ui->actionDeath_note->disconnect();
     ui->actionDamage_maker->disconnect();
     ui->actionRevive_wand->disconnect();
-    ui->actionSend_lowlevel_command->disconnect();
+	ui->actionSend_lowlevel_command->disconnect();
     ui->actionExecute_script_at_server_side->disconnect();
     gotoScene(start_scene);
 
@@ -581,7 +584,7 @@ void MainWindow::on_actionAbout_triggered() {
         .arg(compileDate.toString(Qt::ISODate))
         .arg(time));
 
-    QString project_url = "https://github.com/Paracel/QSanguosha-Para";
+    QString project_url = "https://github.com/tangjs520/QSanguosha-Para-tangjs520-LGCerwyn";
     content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
 
     QString forum_url = "http://qsanguosha.org";

@@ -37,6 +37,9 @@ private slots:
     void on_browseBgButton_clicked();
     void saveConfig();
 
+	void on_resetRecordPathsButton_clicked();
+    void on_browseRecordPathsButton_clicked();
+
     void on_resetGameBgButton_clicked();
     void on_browseGameBgButton_clicked();
 

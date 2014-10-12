@@ -157,7 +157,7 @@ void StartScene::adjustItems()
         QRectF btnRect = button->boundingRect();
         if (i < 5) {
             button->setPos(startSceneRect.width() / 2 - btnRect.width() - 7,
-                (i - 1) * (btnRect.height() * 1.2) + startSceneRect.height() / 2);
+				(i - 1) * (btnRect.height() * 1.2) + startSceneRect.height() / 2);
         }
         else {
             button->setPos(startSceneRect.width() / 2 + 7,

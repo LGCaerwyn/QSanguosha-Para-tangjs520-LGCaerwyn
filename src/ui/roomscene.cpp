@@ -14,6 +14,7 @@
 #include "button.h"
 #include "cardcontainer.h"
 #include "replayer.h"
+#include "recorder.h"
 #include "indicatoritem.h"
 #include "audio.h"
 #include "record-analysis.h"
@@ -77,7 +78,7 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
     _m_commonLayout = &(G_ROOM_SKIN.getCommonLayout());
 
     m_skillButtonSank = false;
-	m_ShefuAskState = ShefuAskNecessary;
+    m_ShefuAskState = ShefuAskNecessary;
 
     // create photos
     for (int i = 0; i < player_count - 1; ++i) {
@@ -265,7 +266,7 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
     if (ServerInfo.DisableChat)
         chat_edit_widget->hide();
 
-    //单机游戏时默认隐藏与聊天相关的窗口
+	//单机游戏时默认隐藏与聊天相关的窗口
     MainWindow *mainWnd = qobject_cast<MainWindow *>(main_window);
     if (NULL != mainWnd && mainWnd->isConsoleStart()) {
         chat_box_widget->hide();
@@ -324,7 +325,7 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
     m_pileCardNumInfoTextBox->setDefaultTextColor(Config.TextEditColor);
     updateRoles(roles);
 
-    add_robot = NULL;
+	add_robot = NULL;
     fill_robots = NULL;
     return_main_menu = NULL;
 
@@ -347,8 +348,8 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
         return_main_menu = new Button(tr("Return to main menu"));
         addItem(return_main_menu);
         connect(return_main_menu, SIGNAL(clicked()), this, SIGNAL(return_to_start()));
-
-        connect(add_robot, SIGNAL(clicked()), ClientInstance, SLOT(addRobot()));
+		
+		connect(add_robot, SIGNAL(clicked()), ClientInstance, SLOT(addRobot()));
         connect(fill_robots, SIGNAL(clicked()), ClientInstance, SLOT(fillRobots()));
         connect(Self, SIGNAL(owner_changed(bool)), this, SLOT(showOwnerButtons(bool)));
     } else {
@@ -385,6 +386,7 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
     pindian_to_card = NULL;
 
     _m_isInDragAndUseMode = false;
+    _m_superDragStarted = false;
 }
 
 void RoomScene::handleGameEvent(const Json::Value &arg) {
@@ -832,6 +834,12 @@ void RoomScene::adjustItems() {
 
     updateTable();
     updateRolesBox();
+
+    QMapIterator<QString, BubbleChatBox *> iter(m_bubbleChatBoxs);
+    while (iter.hasNext()) {
+        iter.next();
+        iter.value()->setArea(getBubbleChatBoxShowArea(iter.key()));
+    }
 }
 
 void RoomScene::_dispersePhotos(QList<Photo *> &photos, QRectF fillRegion,
@@ -977,7 +985,7 @@ void RoomScene::updateTable() {
 
     m_tableCenterPos = m_tableRect.center();
 
-    if (control_panel && return_main_menu) {
+	if (control_panel && return_main_menu) {
         control_panel->setPos(m_tableCenterPos);
         QRectF fillRobotsBtnRect = fill_robots->sceneBoundingRect();
         QPointF returnMainMenuBtnPos = QPointF(fillRobotsBtnRect.left(), fillRobotsBtnRect.bottom()
@@ -1119,29 +1127,18 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats) {
 
 void RoomScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsScene::mousePressEvent(event);
-
-    if (Config.EnableSuperDrag)
-        _m_isInDragAndUseMode = false;
 }
 
 void RoomScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsScene::mouseReleaseEvent(event);
 
     if (_m_isInDragAndUseMode) {
-        bool accepted = false;
-        if (ok_button->isEnabled()) {
-            foreach (Photo *photo, photos) {
-                if (photo->isUnderMouse()) {
-                    accepted = true;
-                    break;
-                }
-            }
-
-            if (!accepted && dashboard->isAvatarUnderMouse())
-                accepted = true;
-        }
-        if (accepted) {
-            ok_button->click();
+        if ((ok_button->isEnabled() || dashboard->currentSkill())
+            && (!dashboard->isUnderMouse() || dashboard->isAvatarUnderMouse())) {
+                if (ok_button->isEnabled())
+                    ok_button->click();
+                else
+                    dashboard->adjustCards(true);
         } else {
             enableTargets(NULL);
             dashboard->unselectAll();
@@ -1158,8 +1155,31 @@ void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
     QGraphicsObject *obj = static_cast<QGraphicsObject *>(focusItem());
     CardItem *card_item = qobject_cast<CardItem *>(obj);
-    if (!card_item || !card_item->isUnderMouse())
+    if (!card_item || !card_item->isUnderMouse() || !dashboard->hasHandCard(card_item))
         return;
+
+    static bool wasOutsideDashboard = false;
+    const bool isOutsideDashboard = !dashboard->isUnderMouse() || dashboard->isAvatarUnderMouse();
+    if (isOutsideDashboard != wasOutsideDashboard) {
+        wasOutsideDashboard = isOutsideDashboard;
+        if (wasOutsideDashboard && !_m_isInDragAndUseMode) {
+            if (!_m_superDragStarted && !dashboard->getPendings().isEmpty())
+                dashboard->clearPendings();
+            dashboard->selectCard(card_item, true);
+            if (dashboard->currentSkill() && !dashboard->getPendings().contains(card_item)) {
+                dashboard->addPending(card_item);
+                dashboard->updatePending();
+            }
+            _m_isInDragAndUseMode = true;
+            _m_superDragStarted = true;
+            if (!dashboard->currentSkill()
+                && (ClientInstance->getStatus() == Client::Playing
+                || ClientInstance->getStatus() == Client::RespondingUse)) {
+                    enableTargets(card_item->getCard());
+            }
+        }
+    }
+
     PlayerCardContainer *victim = NULL;
 
     foreach (Photo *photo, photos) {
@@ -1170,13 +1190,9 @@ void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (dashboard->isAvatarUnderMouse())
         victim = dashboard;
 
-    if (victim != NULL) {
-        if (!_m_isInDragAndUseMode)
-            enableTargets(card_item->getCard());
-
-        _m_isInDragAndUseMode = true;
-        dashboard->selectCard(card_item, true);
+    if (victim != NULL && victim->canBeSelected()) {
         victim->setSelected(true);
+        updateSelectedTargets();
     }
 }
 
@@ -1381,7 +1397,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event) {
             adjustItems();
             break;
         }
-    case Qt::Key_F7: {
+	case Qt::Key_F7: {
         if (control_is_down) {
             if (add_robot && add_robot->isVisible())
                 ClientInstance->addRobot();
@@ -2547,6 +2563,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         }
     }
 
+    _m_superDragStarted = false;
+
     switch (newStatus & Client::ClientStatusBasicMask) {
     case Client::NotActive: {
             if (oldStatus == Client::ExecDialog) {
@@ -2676,9 +2694,11 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         }
     case Client::AskForSkillInvoke: {
             QString skill_name = ClientInstance->getSkillNameToInvoke();
-			if (skill_name == "shefu_cancel") {
+            if (skill_name == "shefu_cancel") {
                 QString data = ClientInstance->getSkillNameToInvokeData().split(":").last();
-                if (m_ShefuAskState == ShefuAskNone || (m_ShefuAskState == ShefuAskNecessary && Self->getMark("Shefu_" + data) == 0)) {
+                if (m_ShefuAskState == ShefuAskNone
+                    || (m_ShefuAskState == ShefuAskNecessary
+                    && Self->getMark("Shefu_" + data) == 0)) {
                     ClientInstance->onPlayerInvokeSkill(false);
                     return;
                 }
@@ -2905,7 +2925,7 @@ void RoomScene::startInXs() {
         control_panel->hide();
     }
 
-    if (return_main_menu) {
+	if (return_main_menu) {
         return_main_menu->hide();
     }
 }
@@ -3090,6 +3110,9 @@ void RoomScene::onGameOver() {
     fillTable(winner_table, winner_list);
     fillTable(loser_table, loser_list);
 
+    if (!ClientInstance->getReplayer() && Config.value("EnableAutoSaveRecord", false).toBool())
+        saveReplayRecord(true, Config.value("NetworkOnly", false).toBool());
+
     addRestartButton(&dialog);
 
     m_roomMutex.unlock();
@@ -3128,14 +3151,56 @@ void RoomScene::addRestartButton(QDialog *dialog) {
     connect(dialog, SIGNAL(rejected()), this, SIGNAL(return_to_start()));
 }
 
-void RoomScene::saveReplayRecord() {
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-    QString filename = QFileDialog::getSaveFileName(main_window,
+//void RoomScene::saveReplayRecord() {
+    //QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+void RoomScene::saveReplayRecord(const bool auto_save, const bool network_only) {
+	if (auto_save) {
+        bool is_network = false;
+        foreach(const ClientPlayer *player, ClientInstance->getPlayers()) {
+            if (player == Self) continue;
+            if (player->getState() != "robot") {
+                is_network = true;
+                break;
+            }
+        }
+        if (network_only && !is_network) return;
+        QString location = Config.value("RecordSavePaths", "records/").toString();
+        if (!location.startsWith(":")) {
+            location.replace("\\", "/");
+            if (!location.endsWith("/"))
+                location.append("/");
+            if (!QDir(location).exists())
+                QDir().mkdir(location);
+            //location.append(QString("%1%2-").arg(Sanguosha->translate(Self->getGeneralName()->objectName())));
+                //.arg(Sanguosha->translate(Self->getGeneral2Name()->objectName())));
+			location.append(QString("%1%2-").arg(Sanguosha->translate(Self->getGeneralName())).arg(Sanguosha->translate(Self->getGeneral2Name())));
+            location.append(QDateTime::currentDateTime().toString("yyyyMMddhhmmss"));
+            location.append(".txt");
+            ClientInstance->save(location);
+        }
+        return;
+    }
+
+    QString location = Config.value("LastReplayDir").toString();
+if (location.isEmpty()) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#else
+        location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#endif
+    }
+	
+	QString filename = QFileDialog::getSaveFileName(main_window,
                                                     tr("Save replay record"),
                                                     location,
                                                     tr("Pure text replay file (*.txt);;Image replay file (*.png)"));
 
     if (!filename.isEmpty()) ClientInstance->save(filename);
+
+		//QFileInfo file_info(filename);
+        //QString last_dir = file_info.absoluteDir().path();
+       // Config.setValue("LastReplayDir", last_dir);
+    //}
 }
 
 ScriptExecutor::ScriptExecutor(QWidget *parent)
