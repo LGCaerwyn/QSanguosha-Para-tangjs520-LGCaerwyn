@@ -902,7 +902,7 @@ void RoomScene::updateTable() {
     // ------------------------
     // region 5 = 0 + 3, region 6 = 2 + 4, region 7 = 0 + 1 + 2
 
-    static int regularSeatIndex[][9] = {
+    static int regularSeatIndex[][10] = {
         {1},
         {5, 6},
         {5, 1, 6},
@@ -911,7 +911,8 @@ void RoomScene::updateTable() {
         {5, 5, 1, 1, 6, 6},
         {5, 5, 1, 1, 1, 6, 6},
         {3, 3, 7, 7, 7, 7, 4, 4},
-        {3, 3, 7, 7, 7, 7, 7, 4, 4}
+        {3, 3, 7, 7, 7, 7, 7, 4, 4},
+		{3, 3, 7, 7, 7, 7, 7, 7, 4, 4},
     };
     static int hulaoSeatIndex[][3] = {
         {1, 1, 1}, // if self is shenlvbu
