@@ -4728,11 +4728,19 @@ void RoomScene::updateRoles(const QString &roles) {
 void RoomScene::updateRolesBox() {
     double centerX = m_rolesBox->boundingRect().width() / 2;
     int n = role_items.length();
-    for (int i = 0; i < n; ++i) {
-        QGraphicsPixmapItem *item = role_items[i];
-        item->setParentItem(m_rolesBox);
-        item->setPos(21 * (i - n / 2) + centerX, 6);
-    }
+	if (n == 11) {
+		for (int i = 0; i < n; ++i) {
+			QGraphicsPixmapItem *item = role_items[i];
+			item->setParentItem(m_rolesBox);
+			item->setPos(21 * (i - n / 2) + centerX - 11, 6);
+		}
+	} else {
+		for (int i = 0; i < n; ++i) {
+			QGraphicsPixmapItem *item = role_items[i];
+			item->setParentItem(m_rolesBox);
+			item->setPos(21 * (i - n / 2) + centerX, 6);
+		}
+	}
     m_pileCardNumInfoTextBox->setTextWidth(m_rolesBox->boundingRect().width());
     m_pileCardNumInfoTextBox->setPos(0, 35);
 }

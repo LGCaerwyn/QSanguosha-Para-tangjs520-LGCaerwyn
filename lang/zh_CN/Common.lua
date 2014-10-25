@@ -219,6 +219,7 @@ CommonTranslationTable = {
 	["CAPITAL(8)"] = "八",
 	["CAPITAL(9)"] = "九",
 	["CAPITAL(10)"] = "十",
+	["CAPITAL(11)"] = "十一",
 	
 	["$gamestart"] = "image=image/animate/gamestart.png",
 	["$game-win"] = "image=image/animate/game-win.png",
