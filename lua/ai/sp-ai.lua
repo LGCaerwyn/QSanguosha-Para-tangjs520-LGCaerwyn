@@ -1387,9 +1387,9 @@ end
 制蛮: 每当你对一名角色造成伤害时，你可以防止此伤害，然后获得其装备区或判定区的一张牌。 ]]
 
 --@tudo: sanyao
-local xiemu_skill = {}
-xiemu_skill.name = "xiemu"
-table.insert(sgs.ai_skills, xiemu_skill)
+local sanyao_skill = {}
+sanyao_skill.name = "sanyao"
+table.insert(sgs.ai_skills, sanyao_skill)
 xiemu_skill.getTurnUseCard = function(self, inclusive)
 	if not self.player:hasUsed("SanyaoCard") then
 		return sgs.Card_Parse("@SanyaoCard=.")
