@@ -355,7 +355,7 @@ public:
         if (to_select->getTypeId() != Card::TypeEquip)
             return false;
 
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
             Slash *slash = new Slash(Card::SuitToBeDecided, -1);
             slash->addSubcard(to_select->getEffectiveId());
             slash->deleteLater();
@@ -978,7 +978,6 @@ public:
                         use.to.append(target);
                         room->sortByActionOrder(use.to);
                         data = QVariant::fromValue(use);
-                        room->getThread()->trigger(TargetConfirming, room, target, data);
                     }
                 }
             }
@@ -1200,7 +1199,7 @@ public:
 
         int index = 1;
         if (target != zhonghui) {
-            index++;
+            ++index;
             room->drawCards(zhonghui, 1, objectName());
         }
         room->broadcastSkillInvoke(objectName(), index);
@@ -1368,7 +1367,7 @@ public:
             int card_id = room->askForCardChosen(simayi, from, "he", "nosfankui");
             CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, simayi->objectName());
             room->obtainCard(simayi, Sanguosha->getCard(card_id),
-                             reason, room->getCardPlace(card_id) != Player::PlaceHand);
+                reason, room->getCardPlace(card_id) != Player::PlaceHand);
         }
     }
 };
@@ -1387,7 +1386,7 @@ public:
 
         QStringList prompt_list;
         prompt_list << "@nosguicai-card" << judge->who->objectName()
-                    << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
+            << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
         QString prompt = prompt_list.join(":");
         const Card *card = room->askForCard(player, "." , prompt, data, Card::MethodResponse, judge->who, true);
         if (card) {
@@ -1539,17 +1538,17 @@ NosYiji::NosYiji(): MasochismSkill("nosyiji") {
 void NosYiji::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
     Room *room = guojia->getRoom();
     int x = damage.damage;
-    for (int i = 0; i < x; i++) {
+    for (int i = 0; i < x; ++i) {
         if (!guojia->isAlive() || !room->askForSkillInvoke(guojia, objectName()))
             return;
-        room->broadcastSkillInvoke("yiji");
+        room->broadcastSkillInvoke(objectName());
 
         QList<ServerPlayer *> _guojia;
         _guojia.append(guojia);
         QList<int> yiji_cards = room->getNCards(n, false);
 
         CardsMoveStruct move(yiji_cards, NULL, guojia, Player::PlaceTable, Player::PlaceHand,
-                             CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
+            CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
         QList<CardsMoveStruct> moves;
         moves.append(move);
         room->notifyMoveCards(true, moves, false, _guojia);
@@ -1558,7 +1557,7 @@ void NosYiji::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
         QList<int> origin_yiji = yiji_cards;
         while (room->askForYiji(guojia, yiji_cards, objectName(), true, false, true, -1, room->getAlivePlayers())) {
             CardsMoveStruct move(QList<int>(), guojia, NULL, Player::PlaceHand, Player::PlaceTable,
-                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
+                CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
             foreach (int id, origin_yiji) {
                 if (room->getCardPlace(id) != Player::DrawPile) {
                     move.card_ids << id;
@@ -1576,7 +1575,7 @@ void NosYiji::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
 
         if (!yiji_cards.isEmpty()) {
             CardsMoveStruct move(yiji_cards, guojia, NULL, Player::PlaceHand, Player::PlaceTable,
-                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
+                CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
             QList<CardsMoveStruct> moves;
             moves.append(move);
             room->notifyMoveCards(true, moves, false, _guojia);
@@ -1702,7 +1701,7 @@ public:
 
                 p->setFlags("-NosTiejiTarget");
             }
-            index++;
+            ++index;
         }
         player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
@@ -1865,7 +1864,7 @@ public:
 QingnangCard::QingnangCard() {
 }
 
-bool QingnangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool QingnangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     return targets.isEmpty() && to_select->isWounded();
 }
 
@@ -1933,8 +1932,15 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data) const{
-        const Card *card_star = data.value<CardResponseStruct>().m_card;
-        if (card_star->isKindOf("Jink")) {
+        const Card *card = data.value<CardResponseStruct>().m_card;
+
+        //张角的出闪效果应该在发动技能"雷击"之前
+        if (card && card->isKindOf("Jink")) {
+            if (card->getSkillName() != "eight_diagram"
+                && card->getSkillName() != "bazhen") {
+                    room->setEmotion(zhangjiao, "jink");
+                    room->getThread()->delay();
+            }
             ServerPlayer *target = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "leiji-invoke", true, true);
             if (target) {
                 room->broadcastSkillInvoke("nosleiji");
@@ -1993,7 +1999,7 @@ public:
             }
         } else {
             int to_remove = nosbuqu.length() - need;
-            for (int i = 0; i < to_remove; i++) {
+            for (int i = 0; i < to_remove; ++i) {
                 room->fillAG(nosbuqu);
                 int card_id = room->askForAG(zhoutai, nosbuqu, false, "nosbuqu");
 
@@ -2095,7 +2101,7 @@ public:
                 log.arg = QString::number(duplicate_numbers.length());
                 room->sendLog(log);
 
-                for (int i = 0; i < duplicate_numbers.length(); i++) {
+                for (int i = 0; i < duplicate_numbers.length(); ++i) {
                     int number = duplicate_numbers.at(i);
 
                     LogMessage log;
@@ -2236,12 +2242,12 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
 }
 
 bool NosGuhuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
             card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
-    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return false;
     }
 
@@ -2250,12 +2256,12 @@ bool NosGuhuoCard::targetFilter(const QList<const Player *> &targets, const Play
 }
 
 bool NosGuhuoCard::targetFixed() const{
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
             card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetFixed();
-    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return true;
     }
 
@@ -2264,12 +2270,12 @@ bool NosGuhuoCard::targetFixed() const{
 }
 
 bool NosGuhuoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
             card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetsFeasible(targets, Self);
-    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return true;
     }
 
@@ -2283,7 +2289,7 @@ const Card *NosGuhuoCard::validate(CardUseStruct &card_use) const{
 
     QString to_nosguhuo = user_string;
     if (user_string == "slash"
-        && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         QStringList nosguhuo_list;
         nosguhuo_list << "slash";
         if (!Config.BanPackages.contains("maneuvering"))
@@ -2384,7 +2390,7 @@ public:
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
         if (player->isKongcheng() || pattern.startsWith(".") || pattern.startsWith("@")) return false;
         if (pattern == "peach" && player->hasFlag("Global_PreventPeach")) return false;
-        for (int i = 0; i < pattern.length(); i++) {
+        for (int i = 0; i < pattern.length(); ++i) {
             QChar ch = pattern[i];
             if (ch.isUpper() || ch.isDigit()) return false; // This is an extremely dirty hack!! For we need to prevent patterns like 'BasicCard'
         }
@@ -2396,10 +2402,10 @@ public:
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
-            || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
+            || Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             NosGuhuoCard *card = new NosGuhuoCard;
-            card->setUserString(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
+            card->setUserString(Sanguosha->getCurrentCardUsePattern());
             card->addSubcard(originalCard);
             return card;
         }

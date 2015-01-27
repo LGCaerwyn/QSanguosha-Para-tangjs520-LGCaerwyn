@@ -286,7 +286,7 @@ bool GreatYeyanCard::targetFilter(const QList<const Player *> &targets, const Pl
                                   const Player *, int &maxVotes) const{
     int i = 0;
     foreach (const Player *player, targets)
-        if (player == to_select) i++;
+        if (player == to_select) ++i;
     maxVotes = qMax(3 - targets.size(), 0) + i;
     return maxVotes > 0;
 }
@@ -297,14 +297,14 @@ void GreatYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlaye
     QMap<ServerPlayer *, int> map;
 
     foreach (ServerPlayer *sp, targets)
-        map[sp]++;
+        ++map[sp];
 
     if (targets.size() == 1)
         map[targets.first()] += 2;
 
     foreach (ServerPlayer *sp, map.keys()) {
-        if (map[sp] > 1) criticaltarget++;
-        totalvictim++;
+        if (map[sp] > 1) ++criticaltarget;
+        ++totalvictim;
     }
     if (criticaltarget > 0) {
         room->removePlayerMark(shenzhouyu, "@flame");
@@ -452,7 +452,7 @@ public:
         QVariant data = QVariant::fromValue(damage);
         QList<ServerPlayer *> players = room->getOtherPlayers(shencc);
         try {
-            for (int i = 0; i < damage.damage; i++) {
+            for (int i = 0; i < damage.damage; ++i) {
                 shencc->addMark("GuixinTimes");
                 if (shencc->askForSkillInvoke(objectName(), data)) {
                     room->broadcastSkillInvoke(objectName());
@@ -699,7 +699,7 @@ public:
         Room *room = shenzhuge->getRoom();
         QList<int> stars = shenzhuge->getPile("stars");
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ++i) {
             room->fillAG(stars, shenzhuge);
             int card_id = room->askForAG(shenzhuge, stars, false, "qixing-discard");
             room->clearAG(shenzhuge);
@@ -739,7 +739,7 @@ KuangfengCard::KuangfengCard() {
     handling_method = Card::MethodNone;
 }
 
-bool KuangfengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool KuangfengCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
     return targets.isEmpty();
 }
 
@@ -771,7 +771,7 @@ public:
         return target != NULL && target->getMark("@gale") > 0;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.nature == DamageStruct::Fire) {
             LogMessage log;
@@ -849,7 +849,7 @@ DawuCard::DawuCard() {
     handling_method = Card::MethodNone;
 }
 
-bool DawuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool DawuCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
     return targets.length() < Self->getPile("stars").length();
 }
 
@@ -858,8 +858,11 @@ void DawuCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets)
     Qixing::DiscardStar(source, n, "dawu");
     source->tag["Qixing_user"] = true;
 
-    foreach (ServerPlayer *target, targets)
-        target->gainMark("@fog");
+    foreach (ServerPlayer *target, targets) {
+        if (target) {
+            target->gainMark("@fog");
+        }
+    }
 }
 
 class DawuViewAsSkill: public ZeroCardViewAsSkill {
@@ -1222,7 +1225,7 @@ bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) 
         return card->getSuit() == suit;
     }
 
-    switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
+    switch (Sanguosha->getCurrentCardUseReason()) {
     case CardUseStruct::CARD_USE_REASON_PLAY: {
             if (Self->isWounded() && card->getSuit() == Card::Heart)
                 return true;
@@ -1237,7 +1240,7 @@ bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) 
         }
     case CardUseStruct::CARD_USE_REASON_RESPONSE:
     case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
-            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            QString pattern = Sanguosha->getCurrentCardUsePattern();
             if (pattern == "jink")
                 return card->getSuit() == Card::Club;
             else if (pattern == "nullification")
@@ -1299,7 +1302,7 @@ int Longhun::getEffectIndex(const ServerPlayer *player, const Card *card) const{
 bool Longhun::isEnabledAtNullification(const ServerPlayer *player) const{
     int n = getEffHp(player), count = 0;
     foreach (const Card *card, player->getHandcards() + player->getEquips()) {
-        if (card->getSuit() == Card::Spade) count++;
+        if (card->getSuit() == Card::Spade) ++count;
         if (count >= n) return true;
     }
     return false;
@@ -1382,4 +1385,3 @@ GodPackage::GodPackage()
 }
 
 ADD_PACKAGE(God)
-

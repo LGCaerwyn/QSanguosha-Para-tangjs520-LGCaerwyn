@@ -58,7 +58,7 @@ class GuhuoDialog: public QDialog {
 
 public:
     static GuhuoDialog *getInstance(const QString &object, bool left = true, bool right = true,
-                                    bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
+        bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
 
 public slots:
     void popup();
@@ -66,7 +66,7 @@ public slots:
 
 protected:
     explicit GuhuoDialog(const QString &object, bool left = true, bool right = true,
-                         bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
+        bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
     virtual bool isButtonEnabled(const QString &button_name) const;
 
 private:
@@ -105,4 +105,3 @@ public:
 };
 
 #endif
-

@@ -19,7 +19,7 @@ public:
 
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
         Room *room = target->getRoom();
-        for (int i = 1; i <= damage.damage; i++) {
+        for (int i = 1; i <= damage.damage; ++i) {
             ServerPlayer *current = room->getCurrent();
             if (!current || current->isDead() || current->getPhase() == Player::NotActive)
                 break;
@@ -184,18 +184,18 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
-            const Card *yongjue_card = move.reason.m_extraData.value<const Card *>();
-            if (!yongjue_card || !yongjue_card->isKindOf("Slash") || !yongjue_card->hasFlag("yongjue"))
-                return false;
-            ServerPlayer *yongjue_user = room->getTag("yongjue_user").value<ServerPlayer *>();
-            room->removeTag("yongjue_user");
-            if (yongjue_user) {
-                if (room->askForSkillInvoke(player, objectName(), QVariant::fromValue(yongjue_user))) {
-                    yongjue_user->obtainCard(yongjue_card);
-                    move.removeCardIds(move.card_ids);
-                    data = QVariant::fromValue(move);
+                const Card *yongjue_card = move.reason.m_extraData.value<const Card *>();
+                if (!yongjue_card || !yongjue_card->isKindOf("Slash") || !yongjue_card->hasFlag("yongjue"))
+                    return false;
+                ServerPlayer *yongjue_user = room->getTag("yongjue_user").value<ServerPlayer *>();
+                room->removeTag("yongjue_user");
+                if (yongjue_user) {
+                    if (room->askForSkillInvoke(player, objectName(), QVariant::fromValue(yongjue_user))) {
+                        yongjue_user->obtainCard(yongjue_card);
+                        move.removeCardIds(move.card_ids);
+                        data = QVariant::fromValue(move);
+                    }
                 }
-            }
         }
         return false;
     }
@@ -301,8 +301,10 @@ public:
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (!target->isAlive())
                     break;
-                if (!p->isAlive() || !target->canDiscard(p, "he"))
+
+                if (!p->isChained() || !target->canDiscard(p, "he"))
                     continue;
+
                 if (p == target) {
                     if (!target->isNude())
                         room->askForDiscard(target, objectName(), 1, 1, false, true);
@@ -326,7 +328,7 @@ public:
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         PindianStruct *pindian = data.value<PindianStruct *>();
         if (TriggerSkill::triggerable(pindian->from)) {
             QString choice = room->askForChoice(pindian->from, objectName(), "up+down+cancel", data);
@@ -451,6 +453,7 @@ public:
         room->doLightbox("$BaolingAnimate");
 
         room->setPlayerMark(player, "baoling", 1);
+
         if (room->changeMaxHpForAwakenSkill(player, 3)) {
             room->recover(player, RecoverStruct(player, NULL, 3));
             if (player->getMark("baoling") == 1)
@@ -510,7 +513,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash") && use.from->isAlive()) {
-            for (int i = 0; i < use.to.length(); i++) {
+            for (int i = 0; i < use.to.length(); ++i) {
                 ServerPlayer *to = use.to.at(i);
                 if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
                     && !to->getEquips().isEmpty()) {

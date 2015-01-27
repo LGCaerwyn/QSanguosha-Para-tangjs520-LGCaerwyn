@@ -19,7 +19,7 @@ bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSp
     newslash->deleteLater();
 #define THIS_SLASH (slash == NULL ? newslash : slash)
     if (player->isCardLimited(THIS_SLASH, Card::MethodUse))
-       return false;
+        return false;
 
     if (player->getPhase() == Player::Play && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
         QList<int> ids;
@@ -192,10 +192,17 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             player->setFlags("-Global_MoreSlashInOneTurn");
             int index = qrand() % 2 + 1;
             if (name == "paoxiao") {
-                if (!player->hasInnateSkill("paoxiao") && player->hasSkill("baobian"))
-                    index += 4;
-                else if (Player::isNostalGeneral(player, "zhangfei"))
+                if (Player::isNostalGeneral(player, "zhangfei")) {
                     index += 2;
+                }
+                else if (!player->hasInnateSkill("paoxiao")) {
+                    if (player->hasSkill("baobian")) {
+                        index += 4;
+                    }
+                    else if (player->hasSkill("fuhun")) {
+                        index += 6;
+                    }
+                }
             }
             room->broadcastSkillInvoke(name, index);
             room->notifySkillInvoked(player, name);
@@ -222,7 +229,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             rangefix += 1;
     }
     foreach (ServerPlayer *p, use.to) {
-        if (p->hasSkill("tongji") && p->getHandcardNum() > p->getHp() && use.from->inMyAttackRange(p, rangefix)) {
+        if (p && p->hasSkill("tongji") && p->getHandcardNum() > p->getHp() && use.from->inMyAttackRange(p, rangefix)) {
             room->broadcastSkillInvoke("tongji");
             room->notifySkillInvoked(p, "tongji");
             break;
@@ -253,7 +260,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         room->setEmotion(player, "weapon/fan");
     if (player->getPhase() == Player::Play
         && player->hasFlag("Global_MoreSlashInOneTurn")
-        && player->hasWeapon("Crossbow")
+        && player->hasWeapon("crossbow")
         && !player->hasSkill("paoxiao")
         && !(player->hasSkill("huxiao") && player->getMark("huxiao") > 0)) {
         player->setFlags("-Global_MoreSlashInOneTurn");
@@ -415,7 +422,7 @@ public:
         events << TargetSpecified;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         foreach (ServerPlayer *to, use.to) {
             if (((use.from->isMale() && to->isFemale()) || (use.from->isFemale() && to->isMale()))
@@ -453,7 +460,7 @@ public:
         events << TargetSpecified;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
             bool do_anim = false;
@@ -686,6 +693,9 @@ public:
         QString asked = data.toStringList().first();
         if (asked == "jink") {
             if (room->askForSkillInvoke(player, "eight_diagram")) {
+                //与OL保持一致，在判定结果出来前显示动画
+                room->setEmotion(player, "armor/eight_diagram");
+
                 int armor_id = player->getArmor()->getId();
                 room->setCardFlag(armor_id, "using");
                 JudgeStruct judge;
@@ -698,13 +708,14 @@ public:
                 room->setCardFlag(armor_id, "-using");
 
                 if (judge.isGood()) {
-                    room->setEmotion(player, "armor/eight_diagram");
                     Jink *jink = new Jink(Card::NoSuit, 0);
                     jink->setSkillName(objectName());
                     room->provide(jink);
 
                     return true;
                 }
+
+                room->setTag("ArmorJudge", "eight_diagram");
             }
         }
         return false;
@@ -804,11 +815,20 @@ void SavageAssault::onEffect(const CardEffectStruct &effect) const{
                                          QVariant::fromValue(effect),
                                          Card::MethodResponse,
                                          effect.from->isAlive() ? effect.from : NULL);
-    if (slash) {
+    if (slash)
         room->setEmotion(effect.to, "killer");
-    } else {
+
+    // ================================
+    bool drwushuang_effect = true;
+    if (slash && effect.from->hasSkill("drwushuang")) {
+        room->broadcastSkillInvoke("wushuang");
+        room->sendCompulsoryTriggerLog(effect.from, "drwushuang");
+
+        drwushuang_effect = room->askForDiscard(effect.to, "drwushuang", 1, 1, true, true);
+    }
+    // ================================
+    if (!slash || !drwushuang_effect) {
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
-        room->getThread()->delay();
     }
 }
 
@@ -826,11 +846,27 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
                                         QVariant::fromValue(effect),
                                         Card::MethodResponse,
                                         effect.from->isAlive() ? effect.from : NULL);
-    if (jink && jink->getSkillName() != "eight_diagram" && jink->getSkillName() != "bazhen") {
+    //张角的出闪效果已经在wind.cpp和nostalgia.cpp的Leiji::trigger和NosLeiji::trigger方法中处理了，
+    //所以此处不再重复处理
+    if (jink && jink->getSkillName() != "eight_diagram" && jink->getSkillName() != "bazhen"
+        && effect.to->getGeneralName() != "zhangjiao"
+        && effect.to->getGeneral2Name() != "zhangjiao"
+        && effect.to->getGeneralName() != "nos_zhangjiao"
+        && effect.to->getGeneral2Name() != "nos_zhangjiao") {
         room->setEmotion(effect.to, "jink");
-    } else if (!jink) {
+    }
+
+    // ================================
+    bool drwushuang_effect = true;
+    if (jink && effect.from->hasSkill("drwushuang")) {
+        room->broadcastSkillInvoke("wushuang");
+        room->sendCompulsoryTriggerLog(effect.from, "drwushuang");
+
+        drwushuang_effect = room->askForDiscard(effect.to, "drwushuang", 1, 1, true, true);
+    }
+    // ================================
+    if (!jink || !drwushuang_effect) {
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
-        room->getThread()->delay();
     }
 }
 
@@ -975,9 +1011,9 @@ void ExNihilo::onEffect(const CardEffectStruct &effect) const{
         int friend_num = 0, enemy_num = 0;
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (AI::GetRelation3v3(effect.to, p) == AI::Friend)
-                friend_num++;
+                ++friend_num;
             else
-                enemy_num++;
+                ++enemy_num;
         }
         if (friend_num < enemy_num) extra = 1;
     }
@@ -1221,7 +1257,9 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.slash->isBlack()) {
+        //防止随机出现的“装备了青釭剑，使用黑杀已造成伤害，
+        //但仍触发仁王盾效果，屏幕上打印出了相关日志”的问题
+        if (effect.slash->isBlack() && !effect.from->hasWeapon("qinggang_sword")) {
             LogMessage log;
             log.type = "#ArmorNullify";
             log.from = player;
@@ -1253,11 +1291,15 @@ public:
         const Horse *horse = NULL;
         if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0) {
             horse = qobject_cast<const Horse *>(from->getOffensiveHorse()->getRealCard());
-            correct += horse->getCorrect();
+            if (horse) {
+                correct += horse->getCorrect();
+            }
         }
         if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0) {
             horse = qobject_cast<const Horse *>(to->getDefensiveHorse()->getRealCard());
-            correct += horse->getCorrect();
+            if (horse) {
+                correct += horse->getCorrect();
+            }
         }
 
         return correct;
@@ -1284,10 +1326,10 @@ void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     ServerPlayer *target = room->askForPlayerChosen(source, targets, "wooden_ox", "@wooden_ox-move", true);
     if (target) {
         const Card *treasure = source->getTreasure();
-        if (treasure)
+        if (treasure) {
             room->moveCardTo(treasure, source, target, Player::PlaceEquip,
-                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER,
-                                            source->objectName(), "wooden_ox", QString()));
+                CardMoveReason(CardMoveReason::S_REASON_TRANSFER, source->objectName(), "wooden_ox", QString()));
+        }
     }
 }
 
@@ -1322,12 +1364,12 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!player->isAlive() || !move.from || move.from != player)
+        if (!move.from || move.from != player)
             return false;
         if (player->hasTreasure("wooden_ox")) {
             int count = 0;
-            for (int i = 0; i < move.card_ids.size(); i++) {
-                if (move.from_pile_names[i] == "wooden_ox") count++;
+            for (int i = 0; i < move.card_ids.size(); ++i) {
+                if (move.from_pile_names[i] == "wooden_ox") ++count;
             }
             if (count > 0) {
                 LogMessage log;
@@ -1340,7 +1382,7 @@ public:
         }
         if (player->getPile("wooden_ox").isEmpty())
             return false;
-        for (int i = 0; i < move.card_ids.size(); i++) {
+        for (int i = 0; i < move.card_ids.size(); ++i) {
             if (move.from_places[i] != Player::PlaceEquip && move.from_places[i] != Player::PlaceTable) continue;
             const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
             if (card->objectName() == "wooden_ox") {
@@ -1548,4 +1590,3 @@ LimitationBrokenPackage::LimitationBrokenPackage()
 ADD_PACKAGE(StandardCard)
 ADD_PACKAGE(StandardExCard)
 ADD_PACKAGE(LimitationBroken)
-

@@ -49,7 +49,7 @@ HuyuanCard::HuyuanCard() {
     handling_method = Card::MethodNone;
 }
 
-bool HuyuanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool HuyuanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     if (!targets.isEmpty())
         return false;
 
@@ -124,11 +124,11 @@ public:
 HeyiCard::HeyiCard() {
 }
 
-bool HeyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool HeyiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
     return targets.length() < 2;
 }
 
-bool HeyiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool HeyiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
@@ -162,7 +162,7 @@ void HeyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
         forever {
             cont_targets.append(players.at(index1));
             if (index1 == index2) break;
-            index1++;
+            ++index1;
             if (index1 >= players.length())
                 index1 -= players.length();
         }
@@ -170,13 +170,13 @@ void HeyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
         if (index1 > index2)
             qSwap(index1, index2);
         if (index_self > index1 && index_self < index2) {
-            for (int i = index1; i <= index2; i++)
+            for (int i = index1; i <= index2; ++i)
                 cont_targets.append(players.at(i));
         } else {
             forever {
                 cont_targets.append(players.at(index2));
                 if (index1 == index2) break;
-                index2++;
+                ++index2;
                 if (index2 >= players.length())
                     index2 -= players.length();
             }
@@ -373,7 +373,7 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const{
         if (list.length() > 0)
             choicelist.append("remainedgenerals");
     } else if (Config.EnableBasara) {
-        QString hidden_generals = player->property("basara_generals").toString();
+        QStringList hidden_generals = player->getBasaraGeneralNames();
         if (!hidden_generals.isEmpty())
             choicelist.append("generals");
     } else if (!player->isLord()) {
@@ -420,8 +420,8 @@ void ShangyiCard::onEffect(const CardEffectStruct &effect) const{
         arr[1] = QSanProtocol::Utils::toJsonArray(list);
         room->doNotify(effect.from, QSanProtocol::S_COMMAND_VIEW_GENERALS, arr);
     } else if (choice == "generals") {
-        QStringList list = player->property("basara_generals").toString().split("+");
-        foreach (QString name, list) {
+        QStringList list = player->getBasaraGeneralNames();
+        foreach (const QString &name, list) {
             LogMessage log;
             log.type = "$ShangyiViewUnknown";
             log.from = effect.from;
@@ -472,7 +472,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash") && use.from->isAlive()) {
             QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
-            for (int i = 0; i < use.to.length(); i++) {
+            for (int i = 0; i < use.to.length(); ++i) {
                 ServerPlayer *to = use.to.at(i);
                 if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
                     && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to))) {
@@ -629,29 +629,33 @@ public:
     }
 };
 
-class Qiluan: public TriggerSkill {
+class Qiluan : public TriggerSkill
+{
 public:
-    Qiluan(): TriggerSkill("qiluan") {
+    Qiluan() : TriggerSkill("qiluan") {
         events << Death << EventPhaseChanging;
         frequency = Frequent;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
+            if (death.who != player) {
                 return false;
+            }
             ServerPlayer *killer = death.damage ? death.damage->from : NULL;
             ServerPlayer *current = room->getCurrent();
 
             if (killer && current && (current->isAlive() || death.who == current)
-                && current->getPhase() != Player::NotActive)
+                && current->getPhase() != Player::NotActive) {
                 killer->addMark(objectName());
-        } else {
+            }
+        }
+        else {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 QList<ServerPlayer *> hetaihous;
@@ -664,10 +668,12 @@ public:
                     p->setMark(objectName(), 0);
                 }
 
-                for (int i = 0; i < hetaihous.length(); i++) {
+                for (int i = 0; i < hetaihous.length(); ++i) {
                     ServerPlayer *p = hetaihous.at(i);
-                    for (int j = 0; j < mark_count.at(i); j++) {
-                        if (p->isDead() || !room->askForSkillInvoke(p, objectName())) break;
+                    for (int j = 0; j < mark_count.at(i); ++j) {
+                        if (p->isDead() || !room->askForSkillInvoke(p, objectName())) {
+                            break;
+                        }
                         p->drawCards(3, objectName());
                     }
                 }

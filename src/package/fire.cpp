@@ -53,7 +53,7 @@ public:
 
     virtual void onDamaged(ServerPlayer *xunyu, const DamageStruct &damage) const{
         Room *room = xunyu->getRoom();
-        for (int i = 0; i < damage.damage; i++) {
+        for (int i = 0; i < damage.damage; ++i) {
             ServerPlayer *to = room->askForPlayerChosen(xunyu, room->getAlivePlayers(), objectName(), "jieming-invoke", true, true);
             if (!to) break;
 
@@ -93,7 +93,7 @@ bool QiangxiCard::targetFilter(const QList<const Player *> &targets, const Playe
     int rangefix = 0;
     if (!subcards.isEmpty() && Self->getWeapon() && Self->getWeapon()->getId() == subcards.first()) {
         const Weapon *card = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += card->getRange() - Self->getAttackRange(false);;
+        rangefix += card->getRange() - Self->getAttackRange(false);
     }
 
     return Self->inMyAttackRange(to_select, rangefix);
@@ -167,22 +167,31 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
+        //血裔发动时增加显示技能名与播放技能配音
+        int extra = 0;
         if (target->hasLordSkill(objectName())) {
-            int extra = 0;
             QList<const Player *> players = target->getAliveSiblings();
             foreach (const Player *player, players) {
                 if (player->getKingdom() == "qun")
                     extra += 2;
             }
-            return extra;
-        } else
-            return 0;
+        }
+        if (extra > 0) {
+            const ServerPlayer *player = qobject_cast<const ServerPlayer *>(target);
+            if (NULL != player && Player::Discard == player->getPhase()
+                && player->getHandcardNum() > player->getHp()) {
+                Room *room = player->getRoom();
+                room->broadcastSkillInvoke("xueyi");
+                room->notifySkillInvoked(player, "xueyi");
+            }
+        }
+        return extra;
     }
 };
 
 class ShuangxiongViewAsSkill: public OneCardViewAsSkill {
 public:
-    ShuangxiongViewAsSkill(): OneCardViewAsSkill("shuangxiong") {
+    ShuangxiongViewAsSkill():OneCardViewAsSkill("shuangxiong") {
         response_or_use = true;
     }
 
@@ -248,8 +257,9 @@ public:
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "shuangxiong") {
                 judge->pattern = (judge->card->isRed() ? "red" : "black");
-                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
+                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
                     shuangxiong->obtainCard(judge->card);
+                }
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -373,6 +383,9 @@ public:
             return false;
 
         if (wolong->askForSkillInvoke(objectName())) {
+            //与OL保持一致，在判定结果出来前显示动画
+            room->setEmotion(wolong, "armor/eight_diagram");
+
             JudgeStruct judge;
             judge.pattern = ".|red";
             judge.good = true;
@@ -382,19 +395,21 @@ public:
             room->judge(judge);
 
             if (judge.isGood()) {
-                room->setEmotion(wolong, "armor/eight_diagram");
                 Jink *jink = new Jink(Card::NoSuit, 0);
                 jink->setSkillName(objectName());
                 room->provide(jink);
                 return true;
             }
+
+            room->setTag("ArmorJudge", "eight_diagram");
         }
 
         return false;
     }
 };
 
-class Kanpo: public OneCardViewAsSkill {
+class Kanpo: public OneCardViewAsSkill
+{
 public:
     Kanpo(): OneCardViewAsSkill("kanpo") {
         filter_pattern = ".|black|.|hand";
@@ -402,15 +417,33 @@ public:
         response_or_use = true;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const {
         Card *ncard = new Nullification(originalCard->getSuit(), originalCard->getNumber());
         ncard->addSubcard(originalCard);
         ncard->setSkillName(objectName());
         return ncard;
     }
 
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return !player->isKongcheng() || !player->getPile("wooden_ox").isEmpty();
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const {
+        if (!player->isKongcheng()) {
+            foreach (const Card *card, player->getHandcards()) {
+                if (card->isBlack()) {
+                    return true;
+                }
+            }
+        }
+
+        QList<int> pile = player->getPile("wooden_ox");
+        if (!pile.isEmpty()) {
+            foreach (int id, pile) {
+                const Card *card = Sanguosha->getCard(id);
+                if (card->isBlack()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 };
 
@@ -512,4 +545,3 @@ FirePackage::FirePackage()
 }
 
 ADD_PACKAGE(Fire)
-

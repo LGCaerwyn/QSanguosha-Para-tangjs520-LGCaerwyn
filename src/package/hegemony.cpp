@@ -46,14 +46,11 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         RecoverStruct recover_struct = data.value<RecoverStruct>();
         int recover = recover_struct.recover;
-        for (int i = 0; i < recover; i++) {
+        for (int i = 0; i < recover; ++i) {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "shushen-invoke", true, true);
             if (target) {
                 room->broadcastSkillInvoke(objectName(), target->getGeneralName().contains("liubei") ? 2 : 1);
-                if (target->isWounded() && room->askForChoice(player, objectName(), "recover+draw", QVariant::fromValue(target)) == "recover")
-                    room->recover(target, RecoverStruct(player));
-                else
-                    target->drawCards(2, objectName());
+                target->drawCards(1, objectName());
             } else {
                 break;
             }
@@ -92,7 +89,7 @@ DuoshiCard::DuoshiCard() {
     mute = true;
 }
 
-bool DuoshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool DuoshiCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
     return true;
 }
 
@@ -243,7 +240,7 @@ public:
                     && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
                         lirang_card << card_id;
                 }
-                i++;
+                ++i;
             }
             if (lirang_card.isEmpty())
                 return false;
@@ -423,11 +420,11 @@ XiongyiCard::XiongyiCard() {
     mute = true;
 }
 
-bool XiongyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool XiongyiCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
     return true;
 }
 
-bool XiongyiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool XiongyiCard::targetsFeasible(const QList<const Player *> &, const Player *) const{
     return true;
 }
 
@@ -476,7 +473,7 @@ public:
         if (damage.card && damage.card->isKindOf("Slash") && target->hasEquip()
             && !target->hasFlag("Global_DebutFlag") && !damage.chain && !damage.transfer) {
             QStringList equiplist;
-            for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+            for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
                 if (!target->getEquip(i)) continue;
                 if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)
                     equiplist << QString::number(i);
@@ -495,11 +492,13 @@ public:
 
             QString choice = room->askForChoice(panfeng, "kuangfu", choicelist.join("+"));
 
+            int effectIndexOffset = (panfeng->getGeneralName() == "sp_panfeng"
+                || panfeng->getGeneral2Name() == "sp_panfeng") ? 2 : 0;
             if (choice == "move") {
-                room->broadcastSkillInvoke(objectName(), 1);
+                room->broadcastSkillInvoke(objectName(), 1 + effectIndexOffset);
                 room->moveCardTo(card, panfeng, Player::PlaceEquip);
             } else {
-                room->broadcastSkillInvoke(objectName(), 2);
+                room->broadcastSkillInvoke(objectName(), 2 + effectIndexOffset);
                 room->throwCard(card, target, panfeng);
             }
         }
@@ -793,4 +792,3 @@ HegemonyPackage::HegemonyPackage()
 }
 
 ADD_PACKAGE(Hegemony)
-

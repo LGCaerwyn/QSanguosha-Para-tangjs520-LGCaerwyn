@@ -72,7 +72,6 @@ public:
         else
             return inherits(cardType);
     }
-
 };
 
 class YinlingCard: public SkillCard {
@@ -140,4 +139,3 @@ public:
 };
 
 #endif
-

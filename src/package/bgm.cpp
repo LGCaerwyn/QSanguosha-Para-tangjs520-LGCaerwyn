@@ -115,7 +115,7 @@ public:
             DummyCard *to_goback;
             if (diaochan->getCardCount() <= target->getHp()) {
                 to_goback = diaochan->isKongcheng() ? new DummyCard : diaochan->wholeHandCards();
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; ++i)
                     if (diaochan->getEquip(i))
                         to_goback->addSubcard(diaochan->getEquip(i)->getEffectiveId());
             } else
@@ -145,7 +145,7 @@ public:
     static int getWeaponCount(ServerPlayer *caoren) {
         int n = 0;
         foreach (ServerPlayer *p, caoren->getRoom()->getAlivePlayers()) {
-            if (p->getWeapon()) n++;
+            if (p->getWeapon()) ++n;
         }
         return n;
     }
@@ -795,7 +795,7 @@ public:
         int no_basic = 0;
 
         QList<int> cardIds;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             int id = room->drawCard();
             cardIds << id;
             CardsMoveStruct move(id, NULL, Player::PlaceTable,
@@ -805,12 +805,12 @@ public:
         }
         DummyCard *dummy = new DummyCard;
         dummy->deleteLater();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             int card_id = cardIds[i];
             const Card *card = Sanguosha->getCard(card_id);
             if (!card->isKindOf("BasicCard") || card->isKindOf("Peach")) {
                 if (!card->isKindOf("BasicCard"))
-                    no_basic++;
+                    ++no_basic;
                 dummy->addSubcard(card_id);
             } else {
                 cards << card;
@@ -1151,7 +1151,7 @@ public:
             Config.AIDelay = 0;
 
             QList<const Card *> to_throw;
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; ++i) {
                 int card_id = 0;
                 room->fillAG(brocade, ganning);
                 if (brocade.length() == 3 - i)
@@ -1331,7 +1331,7 @@ public:
             DummyCard *dummy = new DummyCard;
             QList<int> card_ids;
             QList<Player::Place> original_places;
-            for (int i = 0; i < xiahou->getLostHp(); i++) {
+            for (int i = 0; i < xiahou->getLostHp(); ++i) {
                 if (!xiahou->canDiscard(player, "he"))
                     break;
                 card_ids << room->askForCardChosen(xiahou, player, "he", objectName(), false, Card::MethodDiscard);
@@ -1339,7 +1339,7 @@ public:
                 dummy->addSubcard(card_ids[i]);
                 player->addToPile("#xuehen", card_ids[i], false);
             }
-            for (int i = 0; i < dummy->subcardsLength(); i++)
+            for (int i = 0; i < dummy->subcardsLength(); ++i)
                 room->moveCardTo(Sanguosha->getCard(card_ids[i]), player, original_places[i], false);
             room->setPlayerFlag(player, "-xuehen_InTempMoving");
             if (dummy->subcardsLength() > 0)
@@ -1502,7 +1502,7 @@ public:
         if (TriggerSkill::triggerable(simazhao) && triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
 
-            for (int i = 0; i < damage.damage; i++) {
+            for (int i = 0; i < damage.damage; ++i) {
                 if (!simazhao->isAlive() || !simazhao->askForSkillInvoke(objectName(), data))
                     return false;
                 room->broadcastSkillInvoke(objectName());
@@ -1754,7 +1754,6 @@ public:
     }
 };
 
-
 class Hantong: public TriggerSkill {
 public:
     Hantong(): TriggerSkill("hantong") {
@@ -1778,7 +1777,7 @@ public:
                 foreach (int card_id, move.card_ids) {
                     if (move.from_places[i] == Player::PlaceHand)
                         to_add.append(card_id);
-                    i++;
+                    ++i;
                 }
                 move.removeCardIds(to_add);
                 data = QVariant::fromValue(move);
@@ -2011,7 +2010,7 @@ public:
                 int index = 1;
 
                 if (n <= 2) {
-                    index++;
+                    ++index;
                     gongsunzan->drawCards(1, objectName());
                 }
                 room->broadcastSkillInvoke(objectName(), index);
@@ -2079,4 +2078,3 @@ BGMDIYPackage::BGMDIYPackage(): Package("BGMDIY") {
 }
 
 ADD_PACKAGE(BGMDIY)
-

@@ -56,42 +56,42 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
         if (TriggerSkill::triggerable(target) && triggerEvent == EventPhaseStart
             && target->getPhase() == Player::Finish && target->isWounded() && target->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName(), 1);
-            QStringList draw_num;
-            for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {}
-            int num = room->askForChoice(target, "miji_draw", draw_num.join("+")).toInt();
-            target->drawCards(num, objectName());
-            target->setMark(objectName(), 0);
-            if (!target->isKongcheng()) {
-                forever {
-                    int n = target->getMark(objectName());
-                    if (n < num && !target->isKongcheng()) {
-                        QList<int> handcards = target->handCards();
-                        if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n))
-                            break;
-                    } else {
-                        break;
-                    }
-                }
-                // give the rest cards randomly
-                if (target->getMark(objectName()) < num && !target->isKongcheng()) {
-                    int rest_num = num - target->getMark(objectName());
+                room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
+                QStringList draw_num;
+                for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {}
+                int num = room->askForChoice(target, "miji_draw", draw_num.join("+")).toInt();
+                target->drawCards(num, objectName());
+                target->setMark(objectName(), 0);
+                if (!target->isKongcheng()) {
                     forever {
-                        QList<int> handcard_list = target->handCards();
-                        qShuffle(handcard_list);
-                        int give = qrand() % rest_num + 1;
-                        rest_num -= give;
-                        QList<int> to_give = handcard_list.length() < give ? handcard_list : handcard_list.mid(0, give);
-                        ServerPlayer *receiver = room->getOtherPlayers(target).at(qrand() % (target->aliveCount() - 1));
-                        DummyCard *dummy = new DummyCard(to_give);
-                        room->obtainCard(receiver, dummy, false);
-                        delete dummy;
-                        if (rest_num == 0 || target->isKongcheng())
+                        int n = target->getMark(objectName());
+                        if (n < num && !target->isKongcheng()) {
+                            QList<int> handcards = target->handCards();
+                            if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n))
+                                break;
+                        } else {
                             break;
+                        }
                     }
+                    // give the rest cards randomly
+                    if (target->getMark(objectName()) < num && !target->isKongcheng()) {
+                        int rest_num = num - target->getMark(objectName());
+                        forever {
+                            QList<int> handcard_list = target->handCards();
+                            qShuffle(handcard_list);
+                            int give = qrand() % rest_num + 1;
+                            rest_num -= give;
+                            QList<int> to_give = handcard_list.length() < give ? handcard_list : handcard_list.mid(0, give);
+                            ServerPlayer *receiver = room->getOtherPlayers(target).at(qrand() % (target->aliveCount() - 1));
+                            DummyCard *dummy = new DummyCard(to_give);
+                            room->obtainCard(receiver, dummy, false);
+                            delete dummy;
+                            if (rest_num == 0 || target->isKongcheng())
+                                break;
+                        }
+                    }
+                    room->broadcastSkillInvoke(objectName(), qrand() % 2 + 3);
                 }
-                room->broadcastSkillInvoke(objectName(), qrand() % 2 + 2);
-            }
         } else if (triggerEvent == ChoiceMade) {
             QString str = data.toString();
             if (str.startsWith("Yiji:" + objectName()))
@@ -648,7 +648,7 @@ bool AnxuCard::targetFilter(const QList<const Player *> &targets, const Player *
         return false;
 }
 
-bool AnxuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool AnxuCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
@@ -731,7 +731,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+        return Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
                && pattern == "slash";
     }
 
@@ -770,7 +770,7 @@ public:
             bool can_invoke = false;
             QVariantList slash_list = use.from->tag["InvokeLihuo"].toList();
             foreach (QVariant card, slash_list) {
-                if (card.value<const Card *>() == use.card) {
+                if (card.value<const Card *>() == (const Card *)use.card) {
                     can_invoke = true;
                     slash_list.removeOne(card);
                     use.from->tag["InvokeLihuo"] = QVariant::fromValue(slash_list);
@@ -854,7 +854,7 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        QString pattern = Sanguosha->getCurrentCardUsePattern();
         if (pattern == "@@chunlao")
             return to_select->isKindOf("Slash");
         else
@@ -862,7 +862,7 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        QString pattern = Sanguosha->getCurrentCardUsePattern();
         if (pattern == "@@chunlao") {
             if (cards.length() == 0) return NULL;
 
@@ -884,7 +884,7 @@ public:
         view_as_skill = new ChunlaoViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *chengpu, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *chengpu, QVariant &) const{
         if (triggerEvent == EventPhaseStart && chengpu->getPhase() == Player::Finish
             && !chengpu->isKongcheng() && chengpu->getPile("wine").isEmpty()) {
             room->askForUseCard(chengpu, "@@chunlao", "@chunlao", -1, Card::MethodNone);
@@ -962,4 +962,3 @@ YJCM2012Package::YJCM2012Package()
 }
 
 ADD_PACKAGE(YJCM2012)
-

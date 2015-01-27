@@ -134,8 +134,9 @@ void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const{
 
                 room->broadcastSkillInvoke(skill->objectName());
             }
-        } else
+        } else {
             targets << player;
+        }
     }
 
     CardUseStruct use = card_use;
@@ -192,8 +193,9 @@ void AOE::onUse(Room *room, const CardUseStruct &card_use) const{
 
                 room->broadcastSkillInvoke(skill->objectName());
             }
-        } else
+        } else {
             targets << player;
+        }
     }
 
     CardUseStruct use = card_use;
@@ -205,7 +207,7 @@ QString SingleTargetTrick::getSubtype() const{
     return "single_target_trick";
 }
 
-bool SingleTargetTrick::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool SingleTargetTrick::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
     return true;
 }
 
@@ -274,6 +276,10 @@ void DelayedTrick::onEffect(const CardEffectStruct &effect) const{
     room->judge(judge_struct);
 
     if (judge_struct.isBad()) {
+        //延时类锦囊在其判定生效后播放特效动画
+        QString trickEmotion = QString("trick/%1").arg(log.arg);
+        room->setEmotion(effect.to, trickEmotion);
+
         takeEffect(effect.to);
         if (room->getCardOwner(getEffectiveId()) == NULL) {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
@@ -500,4 +506,3 @@ StandardPackage::StandardPackage()
 }
 
 ADD_PACKAGE(Standard)
-

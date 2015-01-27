@@ -1,7 +1,6 @@
 #include "special3v3.h"
 #include "skill.h"
 #include "standard.h"
-#include "server.h"
 #include "engine.h"
 #include "ai.h"
 #include "maneuvering.h"
@@ -165,13 +164,13 @@ public:
                                 || move.from_places[i] == Player::PlaceEquip)) {
                             player->addMark(objectName());
                         }
-                        i++;
+                        ++i;
                     }
                 }
             } else {
                 int n = player->getMark(objectName());
                 try {
-                    for (int i = 0; i < n; i++) {
+                    for (int i = 0; i < n; ++i) {
                         player->removeMark(objectName());
                         if (player->isAlive() && player->askForSkillInvoke(objectName(), data)) {
                             room->broadcastSkillInvoke(objectName());
@@ -417,7 +416,7 @@ public:
                 if (player->getWeapon())
                     room->throwCard(player->getWeapon(), player);
                 if (player->getMark("zhanshen") == 1)
-                room->handleAcquireDetachSkills(player, "mashu|shenji");
+                    room->handleAcquireDetachSkills(player, "mashu|shenji");
             }
         }
         return false;
@@ -436,7 +435,7 @@ public:
             if (from->getRole().at(0) != to->getRole().at(0)) {
                 foreach (const Player *p, to->getAliveSiblings()) {
                     if (p->hasSkill("zhenwei") && p->getRole().at(0) == to->getRole().at(0))
-                        dist++;
+                        ++dist;
                 }
             }
             return dist;

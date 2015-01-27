@@ -497,8 +497,22 @@ public:
             else
                 players = room->getOtherPlayers(lords.first());
             foreach (ServerPlayer *p, players) {
-                if (!p->hasSkill("zhiba_pindian"))
-                    room->attachSkillToPlayer(p, "zhiba_pindian");
+                if (!p->hasSkill("zhiba_pindian")) {
+                    if (p->getGeneralName() == "zuoci") {
+                        p->tag["zuoci_zhiba_pindian"] = true;
+
+                        if (!ServerInfo.EnableBasara) {
+                            continue;
+                        }
+                    }
+
+                    if (p->getKingdom() == "wu") {
+                        room->attachSkillToPlayer(p, "zhiba_pindian");
+                    }
+                    else if (p->getKingdom() == "god") {
+                        p->tag["god_zhiba_pindian"] = true;
+                    }
+                }
             }
         } else if (triggerEvent == EventLoseSkill && data.toString() == "zhiba") {
             QList<ServerPlayer *> lords;
@@ -697,7 +711,7 @@ public:
                         guzhengToGet << card_id;
                     else if (!guzhengToGet.contains(card_id))
                         guzhengOther << card_id;
-                    i++;
+                    ++i;
                 }
             }
 
@@ -728,7 +742,6 @@ public:
                 if (room->getCardPlace(card_id) == Player::DiscardPile)
                     cardsOther << card_id;
             }
-
 
             if (cardsToGet.isEmpty())
                 return false;
@@ -962,7 +975,7 @@ public:
         zuoci->tag["Huashens"] = huashens;
 
         QStringList hidden;
-        for (int i = 0; i < n; i++) hidden << "unknown";
+        for (int i = 0; i < n; ++i) hidden << "unknown";
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p == zuoci)
                 room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, zuoci->objectName(), acquired.join(":"), QList<ServerPlayer *>() << p);
@@ -1052,22 +1065,30 @@ public:
         AI* ai = zuoci->getAI();
         if (ai) {
             QHash<QString, const General *> hash;
-            foreach (QString general_name, huashen_generals) {
-                const General *general = Sanguosha->getGeneral(general_name);
-                foreach (const Skill *skill, general->getVisibleSkillList()) {
+            foreach (const QString &general_name, huashen_generals) {
+                const General *huashen_general = Sanguosha->getGeneral(general_name);
+                foreach (const Skill *skill, huashen_general->getVisibleSkillList()) {
                     if (skill->isLordSkill()
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;
 
                     if (!skill_names.contains(skill->objectName())) {
-                        hash[skill->objectName()] = general;
+                        hash[skill->objectName()] = huashen_general;
                         skill_names << skill->objectName();
                     }
                 }
             }
             if (skill_names.isEmpty()) return;
             skill_name = ai->askForChoice("huashen", skill_names.join("+"), QVariant());
+
+            if (hash.find(skill_name) == hash.end()) {
+                skill_name += "_new";
+                if (hash.find(skill_name) == hash.end()) {
+                    skill_name = skill_names.first();
+                }
+            }
+
             general = hash[skill_name];
             Q_ASSERT(general != NULL);
         } else {
@@ -1086,17 +1107,52 @@ public:
             if (!skill_names.isEmpty())
                 skill_name = room->askForChoice(zuoci, "huashen", skill_names.join("+"));
         }
-        //Q_ASSERT(!skill_name.isNull() && !skill_name.isEmpty());
 
-        QString kingdom = general->getKingdom();
-        if (zuoci->getKingdom() != kingdom) {
-            if (kingdom == "god")
+        //左慈为主将时，才对国籍和性别进行设置
+        if (zuoci->getGeneralName() == "zuoci") {
+            QString kingdom = general->getKingdom();
+            if (kingdom == "god") {
                 kingdom = room->askForKingdom(zuoci);
-            room->setPlayerProperty(zuoci, "kingdom", kingdom);
-        }
+            }
 
-        if (zuoci->getGender() != general->getGender())
-            zuoci->setGender(general->getGender());
+            //暗将模式，在未亮将前，左慈如有这些tag，说明张角或孙策主公已亮将，
+            //程序流程到达此处，说明左慈也已亮将，遂将这些tag转换为左慈特有的tag
+            if (zuoci->tag.contains("god_huangtianv")) {
+                zuoci->tag.remove("god_huangtianv");
+                zuoci->tag["zuoci_huangtianv"] = true;
+            }
+            if (zuoci->tag.contains("god_zhiba_pindian")) {
+                zuoci->tag.remove("god_zhiba_pindian");
+                zuoci->tag["zuoci_zhiba_pindian"] = true;
+            }
+
+            //修复“张角或孙策为主公，左慈选化身武将后(化身武将的国籍为'群'或'吴')
+            //没有'黄天送牌'或'制霸拼点'技能”的问题
+            if (zuoci->tag.contains("zuoci_huangtianv")) {
+                if (kingdom == "qun" && !zuoci->hasSkill("huangtianv")) {
+                    room->attachSkillToPlayer(zuoci, "huangtianv");
+                }
+                else if (kingdom != "qun" && zuoci->hasSkill("huangtianv")) {
+                    room->detachSkillFromPlayer(zuoci, "huangtianv", false, true);
+                }
+            }
+            if (zuoci->tag.contains("zuoci_zhiba_pindian")) {
+                if (kingdom == "wu" && !zuoci->hasSkill("zhiba_pindian")) {
+                    room->attachSkillToPlayer(zuoci, "zhiba_pindian");
+                }
+                else if (kingdom != "wu" && zuoci->hasSkill("zhiba_pindian")) {
+                    room->detachSkillFromPlayer(zuoci, "zhiba_pindian", false, true);
+                }
+            }
+
+            if (zuoci->getKingdom() != kingdom) {
+                room->setPlayerProperty(zuoci, "kingdom", kingdom);
+            }
+
+            if (zuoci->getGender() != general->getGender()) {
+                zuoci->setGender(general->getGender());
+            }
+        }
 
         Json::Value arg(Json::arrayValue);
         arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
@@ -1118,8 +1174,7 @@ public:
     }
 
     virtual QDialog *getDialog() const{
-        static HuashenDialog *dialog;
-
+        static HuashenDialog *dialog = NULL;
         if (dialog == NULL)
             dialog = new HuashenDialog;
 
@@ -1247,4 +1302,3 @@ MountainPackage::MountainPackage()
 }
 
 ADD_PACKAGE(Mountain)
-

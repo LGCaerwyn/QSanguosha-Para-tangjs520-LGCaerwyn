@@ -259,7 +259,7 @@ public:
 
                 QList<int> card_to_throw;
                 QList<int> card_to_gotback;
-                for (int i = 0; i < x; i++) {
+                for (int i = 0; i < x; ++i) {
                     if (Sanguosha->getCard(ids[i])->getSuit() == Card::Heart)
                         card_to_throw << ids[i];
                     else
@@ -302,21 +302,21 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.card_ids.length() == 1 && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
-            const Card *card = move.reason.m_extraData.value<const Card *>();
-            if (!card || !card->isKindOf("SavageAssault"))
-                return false;
-            if (card->isVirtualCard()) {
-                if (card->getSkillName() != "guhuo" && card->getSkillName() != "nosguhuo")
+                const Card *card = move.reason.m_extraData.value<const Card *>();
+                if (!card || !card->isKindOf("SavageAssault"))
                     return false;
-            }
-            if (player != move.from) {
-                room->broadcastSkillInvoke(objectName());
-                room->sendCompulsoryTriggerLog(player, objectName());
+                if (card->isVirtualCard()) {
+                    if (card->getSkillName() != "guhuo" && card->getSkillName() != "nosguhuo")
+                        return false;
+                }
+                if (player != move.from) {
+                    room->broadcastSkillInvoke(objectName());
+                    room->sendCompulsoryTriggerLog(player, objectName());
 
-                player->obtainCard(card);
-                move.removeCardIds(move.card_ids);
-                data = QVariant::fromValue(move);
-            }
+                    player->obtainCard(card);
+                    move.removeCardIds(move.card_ids);
+                    data = QVariant::fromValue(move);
+                }
         }
         return false;
     }
@@ -657,7 +657,7 @@ void LuanwuCard::onEffect(const CardEffectStruct &effect) const{
     }
 
     QList<ServerPlayer *> luanwu_targets;
-    for (int i = 0; i < distance_list.length(); i++) {
+    for (int i = 0; i < distance_list.length(); ++i) {
         if (distance_list[i] == nearest && effect.to->canSlash(players[i], NULL, false))
             luanwu_targets << players[i];
     }
@@ -720,25 +720,30 @@ public:
                         if (jink_list.at(index).toInt() == 1)
                             jink_list.replace(index, QVariant(2));
                     }
-                    index++;
+                    ++index;
                 }
                 use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+
                 if (play_effect) {
                     room->broadcastSkillInvoke(objectName(), 1);
                     room->sendCompulsoryTriggerLog(use.from, objectName());
                 }
             } else if (triggerEvent == TargetConfirmed && use.from->isFemale()) {
+                bool play_effect = false;
                 foreach (ServerPlayer *p, use.to) {
                     if (p == player) {
+                        play_effect = true;
                         if (jink_list.at(index).toInt() == 1)
                             jink_list.replace(index, QVariant(2));
                     }
-                    index++;
+                    ++index;
                 }
                 use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
 
-                room->broadcastSkillInvoke(objectName(), 2);
-                room->sendCompulsoryTriggerLog(player, objectName());
+                if (play_effect) {
+                    room->broadcastSkillInvoke(objectName(), 2);
+                    room->sendCompulsoryTriggerLog(player, objectName());
+                }
             }
         }
 
@@ -886,4 +891,3 @@ ThicketPackage::ThicketPackage()
 }
 
 ADD_PACKAGE(Thicket)
-

@@ -115,9 +115,9 @@ public:
 
     virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
         if (card->isKindOf("Duel"))
-            return -2;
+            return 2;
         else
-            return -1;
+            return 1;
     }
 };
 
@@ -230,7 +230,7 @@ void CangjiCard::onEffect(const CardEffectStruct &effect) const{
     if (effect.from->getEquips().isEmpty())
         return;
     bool loop = false;
-    for (int i = 0; i <= 3; i++) {
+    for (int i = 0; i <= 3; ++i) {
         if (effect.from->getEquip(i)) {
             foreach (ServerPlayer *p, room->getOtherPlayers(effect.from)) {
                 if (!p->getEquip(i)) {
@@ -362,7 +362,7 @@ public:
                 room->sendLog(log);
                 jink_list.replace(index, QVariant(0));
             }
-            index++;
+            ++index;
         }
         player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
@@ -425,7 +425,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *sunshangxiang, QVariant &data) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from == sunshangxiang && move.from_places.contains(Player::PlaceEquip)) {
-            for (int i = 0; i < move.card_ids.size(); i++) {
+            for (int i = 0; i < move.card_ids.size(); ++i) {
                 if (!sunshangxiang->isAlive())
                     return false;
                 if (move.from_places[i] == Player::PlaceEquip) {
@@ -474,7 +474,7 @@ public:
                     && room->getCardOwner(card_id) == move.from
                     && (room->getCardPlace(card_id) == Player::PlaceHand || room->getCardPlace(card_id) == Player::PlaceEquip))
                     card_ids << card_id;
-                i++;
+                ++i;
             }
             if (card_ids.isEmpty())
                 return false;
@@ -616,7 +616,7 @@ public:
         return target && !target->isAlive() && target->hasSkill(objectName());
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         if (triggerEvent == BeforeGameOverJudge) {
             player->setMark(objectName(), player->getCardCount());
         } else {
@@ -638,7 +638,7 @@ public:
             }
             if (killer && killer->isAlive() && player->canDiscard(killer, "he")
                 && (normal || room->askForSkillInvoke(player, objectName()))) {
-                for (int i = 0; i < n; i++) {
+                for (int i = 0; i < n; ++i) {
                     if (player->canDiscard(killer, "he")) {
                         int card_id = room->askForCardChosen(player, killer, "he", objectName(), false, Card::MethodDiscard);
                         room->throwCard(Sanguosha->getCard(card_id), killer, player);
@@ -725,8 +725,9 @@ public:
     virtual int getExtra(const Player *target) const{
         if (target->hasSkill(objectName())) {
             int max = 0;
-            foreach (const Player *p, target->getAliveSiblings())
+            foreach (const Player *p, target->getAliveSiblings()) {
                 if (p->getHp() > max) max = p->getHp();
+            }
             return max;
         } else
             return 0;
@@ -924,7 +925,7 @@ public:
                 && (player->getHp() > hansui->getHp() || hansui->hasFlag("NiluanSlashTarget"))) {
                 if (hansui->isKongcheng()) {
                     bool has_black = false;
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i < 4; ++i) {
                         const EquipCard *equip = hansui->getEquip(i);
                         if (equip && equip->isBlack()) {
                             has_black = true;

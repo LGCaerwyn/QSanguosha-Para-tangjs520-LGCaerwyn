@@ -28,7 +28,6 @@ FireSlash::FireSlash(Suit suit, int number)
     : NatureSlash(suit, number, DamageStruct::Fire)
 {
     setObjectName("fire_slash");
-    nature = DamageStruct::Fire;
 }
 
 Analeptic::Analeptic(Card::Suit suit, int number)
@@ -74,7 +73,7 @@ void Analeptic::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
     room->setEmotion(effect.to, "analeptic");
 
-    if (effect.to->hasFlag("Global_Dying") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+    if (effect.to->hasFlag("Global_Dying") && Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
         room->recover(effect.to, RecoverStruct(effect.from, this));
     else
         room->addPlayerMark(effect.to, "drank");
@@ -92,7 +91,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+        return Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
                && pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
@@ -128,7 +127,7 @@ public:
             log.from = player;
             log.to << damage.to;
             log.arg = QString::number(damage.damage);
-            log.arg2 = QString::number(++ damage.damage);
+            log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
 
             data = QVariant::fromValue(damage);
@@ -233,7 +232,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player || !move.from_places.contains(Player::PlaceEquip))
                 return false;
-            for (int i = 0; i < move.card_ids.size(); i++) {
+            for (int i = 0; i < move.card_ids.size(); ++i) {
                 if (move.from_places[i] != Player::PlaceEquip) continue;
                 const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
                 if (card->objectName() == objectName()) {
@@ -312,7 +311,7 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -467,4 +466,3 @@ ManeuveringPackage::ManeuveringPackage()
 }
 
 ADD_PACKAGE(Maneuvering)
-

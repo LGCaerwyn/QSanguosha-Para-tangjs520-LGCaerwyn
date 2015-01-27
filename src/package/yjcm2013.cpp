@@ -119,7 +119,7 @@ public:
         global = true;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
         if ((triggerEvent == PreCardUsed || triggerEvent == CardResponded) && player->getPhase() <= Player::Play) {
             const Card *card = NULL;
             if (triggerEvent == PreCardUsed)
@@ -306,7 +306,7 @@ public:
     }
 
     virtual const Card *viewAs() const{
-        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        QString pattern = Sanguosha->getCurrentCardUsePattern();
         if (pattern.endsWith("!"))
             return new ExtraCollateralCard;
         else
@@ -353,7 +353,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isNDTrick() || use.card->isKindOf("BasicCard")) {
             jianyong->setFlags("-QiaoshuiSuccess");
-            if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+            if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
                 return false;
 
             QList<ServerPlayer *> available_targets;
@@ -410,7 +410,7 @@ public:
                             }
                         }
                         Q_ASSERT(!victims.isEmpty());
-                        extra->tag["collateralVictim"] = QVariant::fromValue((victims.at(qrand() % victims.length() - 1)));
+                        extra->tag["collateralVictim"] = QVariant::fromValue(victims.at(qrand() % victims.length() - 1));
                     }
                 }
                 use.to.append(extra);
@@ -812,7 +812,7 @@ public:
                     && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
                         zongxuan_card << card_id;
                 }
-                i++;
+                ++i;
             }
             if (zongxuan_card.isEmpty())
                 return false;
@@ -1016,9 +1016,9 @@ void MiejiCard::onEffect(const CardEffectStruct &effect) const{
     foreach (const Card *c, effect.to->getCards("he")) {
         if (effect.to->canDiscard(effect.to, c->getId())) {
             if (c->isKindOf("TrickCard"))
-                trick_num++;
+                ++trick_num;
             else
-                nontrick_num++;
+                ++nontrick_num;
         }
     }
     bool discarded = room->askForDiscard(effect.to, "mieji", 1, qMin(1, trick_num), nontrick_num > 1, true, "@mieji-trick", "TrickCard");
@@ -1213,7 +1213,7 @@ public:
                 const Card *card = NULL;
                 if (!target->isKongcheng())
                     card = room->askForCard(target, "Jink", "@qiuyuan-give:" + player->objectName(), data, Card::MethodNone);
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), "nosqiuyuan", QString());
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), "qiuyuan", QString());
                 if (!card) {
                     if (use.from->canSlash(target, use.card, false)) {
                         LogMessage log;
@@ -1227,7 +1227,6 @@ public:
                         use.to.append(target);
                         room->sortByActionOrder(use.to);
                         data = QVariant::fromValue(use);
-                        room->getThread()->trigger(TargetConfirming, room, target, data);
                     }
                 } else {
                     room->obtainCard(player, card, reason);

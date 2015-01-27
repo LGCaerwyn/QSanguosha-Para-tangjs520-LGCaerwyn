@@ -7,12 +7,12 @@
 
 class ExpPattern: public CardPattern {
 public:
-    ExpPattern(const QString &exp);
+    explicit ExpPattern(const QString &exp);
     virtual bool match(const Player *player, const Card *card) const;
+
 private:
     QString exp;
     bool matchOne(const Player *player, const Card *card, QString exp) const;
 };
 
 #endif
-

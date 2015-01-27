@@ -63,7 +63,7 @@ public:
                             && room->getCardOwner(card_id) == move.from
                             && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip))))
                     card_ids << card_id;
-                i++;
+                ++i;
             }
             if (card_ids.isEmpty())
                 return false;
@@ -132,13 +132,23 @@ public:
             if (use.card->getSkillName() == "jiushi")
                 player->turnOver();
         } else if (triggerEvent == PreDamageDone) {
+            //已确定会受到伤害，增加一个标志，以便DamageComplete时判断是否能发动酒诗再翻回来
+            //如果防止了伤害，则程序执行流程不会进入到这里（具体可参见Room::damage，
+            //if (thread->trigger(DamageCaused, this, damage_data.from, qdata)) break;
+            //防止了伤害，DamageCaused处理函数均会返回true，就会直接break那个do-while循环）
+            player->tag["jiushi_injuried"] = true;
+
             player->tag["PredamagedFace"] = !player->faceUp();
         } else if (triggerEvent == DamageComplete) {
-            bool facedown = player->tag.value("PredamagedFace").toBool();
-            player->tag.remove("PredamagedFace");
-            if (facedown && !player->faceUp() && player->askForSkillInvoke("jiushi", data)) {
-                room->broadcastSkillInvoke("jiushi", 2);
-                player->turnOver();
+            //如果伤害已被防止，则不能执行酒诗的第二个效果
+            if (player->tag.contains("jiushi_injuried")) {
+                player->tag.remove("jiushi_injuried");
+                bool facedown = player->tag.value("PredamagedFace").toBool();
+                player->tag.remove("PredamagedFace");
+                if (facedown && !player->faceUp() && player->askForSkillInvoke("jiushi", data)) {
+                    room->broadcastSkillInvoke("jiushi", 2);
+                    player->turnOver();
+                }
             }
         }
 
@@ -255,13 +265,15 @@ public:
 class Enyuan: public TriggerSkill {
 public:
     Enyuan(): TriggerSkill("enyuan") {
-        events << CardsMoveOneTime << Damaged;
+        events << CardsMoveOneTime << AfterGiveCards << Damaged;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardsMoveOneTime) {
+        if (triggerEvent == CardsMoveOneTime || triggerEvent == AfterGiveCards) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.from && move.from->isAlive() && move.from != move.to
+                && move.to_pile_name != "wooden_ox"
+                && move.reason.m_skillName != "rende"
                 && move.card_ids.size() >= 2
                 && move.reason.m_reason != CardMoveReason::S_REASON_PREVIEWGIVE) {
                 move.from->setFlags("EnyuanDrawTarget");
@@ -277,9 +289,10 @@ public:
             ServerPlayer *source = damage.from;
             if (!source || source == player) return false;
             int x = damage.damage;
-            for (int i = 0; i < x; i++) {
+            for (int i = 0; i < x; ++i) {
                 if (source->isAlive() && player->isAlive() && room->askForSkillInvoke(player, objectName(), data)) {
                     room->broadcastSkillInvoke(objectName(), 2);
+
                     const Card *card = NULL;
                     if (!source->isKongcheng())
                         card = room->askForExchange(source, objectName(), 1, 1, false, "EnyuanGive::" + player->objectName(), true);
@@ -775,7 +788,7 @@ void GanluCard::swapEquip(ServerPlayer *first, ServerPlayer *second) const{
     room->moveCardsAtomic(exchangeMove, false);
 }
 
-bool GanluCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool GanluCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
@@ -927,7 +940,7 @@ public:
         Room *room = zhonghui->getRoom();
 
         int x = damage.damage;
-        for (int i = 0; i < x; i++) {
+        for (int i = 0; i < x; ++i) {
             if (zhonghui->askForSkillInvoke("quanji")) {
                 room->broadcastSkillInvoke("quanji");
                 room->drawCards(zhonghui, 1, objectName());
@@ -1180,4 +1193,3 @@ YJCMPackage::YJCMPackage()
 }
 
 ADD_PACKAGE(YJCM)
-

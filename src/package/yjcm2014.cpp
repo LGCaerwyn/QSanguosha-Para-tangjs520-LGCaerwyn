@@ -249,7 +249,7 @@ public:
                     && c->isBlack() && c->getTypeId() == Card::TypeBasic) {
                     shenduan_card << card_id;
                 }
-                i++;
+                ++i;
             }
             if (shenduan_card.isEmpty())
                 return false;
@@ -733,7 +733,7 @@ public:
                     }
                     Q_ASSERT(!victims.isEmpty());
                     collateral_victim = room->askForPlayerChosen(player, victims, "zenhui_collateral", "@zenhui-collateral:" + target->objectName());
-                    target->tag["collateralVictim"] = QVariant::fromValue((collateral_victim));
+                    target->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
 
                     LogMessage log;
                     log.type = "#CollateralSlash";
@@ -747,7 +747,7 @@ public:
                     const Card *card = room->askForCard(target, "..", "@zenhui-give:" + player->objectName(), data, Card::MethodNone);
                     if (card) {
                         extra_target = false;
-                        player->obtainCard(card);
+                        player->obtainCard(card, true, CardMoveReason::S_REASON_GIVE);
 
                         if (target->isAlive()) {
                             LogMessage log;
@@ -853,7 +853,7 @@ public:
         foreach (ServerPlayer *caifuren, room->getAllPlayers()) {
             if (!TriggerSkill::triggerable(caifuren) || caifuren == player) continue;
             QStringList choices;
-            for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+            for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
                 if (player->getEquip(i) && !caifuren->getEquip(i))
                     choices << QString::number(i);
             }
@@ -890,11 +890,11 @@ public:
         global = true;
     }
 
-    virtual int getPriority(TriggerEvent triggerEvent) const{
+    virtual int getPriority(TriggerEvent) const{
         return 6;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == PreCardUsed && player->isAlive() && player->getPhase() != Player::NotActive
             && player->getMark("qieting") == 0) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -957,7 +957,7 @@ void XianzhouCard::onEffect(const CardEffectStruct &effect) const{
     DummyCard *dummy = new DummyCard;
     foreach (const Card *c, effect.from->getEquips()) {
         dummy->addSubcard(c);
-        len++;
+        ++len;
     }
     room->setPlayerMark(effect.to, "xianzhou", len);
     effect.to->obtainCard(dummy);
@@ -967,7 +967,7 @@ void XianzhouCard::onEffect(const CardEffectStruct &effect) const{
     int count = 0;
     foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
         if (effect.to->inMyAttackRange(p)) {
-            count++;
+            ++count;
             if (count >= len) {
                 rec = false;
                 break;
@@ -996,7 +996,7 @@ public:
     }
 
     virtual const Card *viewAs() const{
-        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        QString pattern = Sanguosha->getCurrentCardUsePattern();
         if (pattern == "@xianzhou") {
             return new XianzhouDamageCard;
         } else {

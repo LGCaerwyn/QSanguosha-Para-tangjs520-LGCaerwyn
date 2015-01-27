@@ -25,7 +25,7 @@ class Package: public QObject {
 public:
     enum Type { GeneralPack, CardPack, SpecialPack };
 
-    Package(const QString &name, Type pack_type = GeneralPack) {
+    explicit Package(const QString &name, Type pack_type = GeneralPack) {
         setObjectName(name);
         type = pack_type;
     }
@@ -90,4 +90,3 @@ public:
 #define ADD_PACKAGE(name) static PackageAdder name##PackageAdder(#name, new name##Package);
 
 #endif
-
