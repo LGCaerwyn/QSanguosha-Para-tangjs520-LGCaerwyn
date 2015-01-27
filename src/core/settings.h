@@ -87,6 +87,8 @@ public:
     bool EnableIntellectualSelection;
     bool EnableDoubleClick;
     bool EnableSuperDrag;
+	bool EnableAutoSaveRecord;
+    bool NetworkOnly;
 
     int AutoCloseCardContainerDelaySeconds;
     bool RandomPlayBGM;
@@ -103,6 +105,7 @@ public:
 
     QString BackgroundImage;
     QString GameBackgroundImage;
+	QString RecordSavePaths;
 
     // consts
     static const int S_SURRENDER_REQUEST_MIN_INTERVAL;

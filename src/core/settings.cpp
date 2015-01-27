@@ -128,6 +128,10 @@ void Settings::init() {
     ShowMsgBoxWhenExit = value("ShowMsgBoxWhenExit", true).toBool();
     BubbleChatBoxDelaySeconds = value("BubbleChatBoxDelaySeconds", 2).toInt();
 
+	EnableAutoSaveRecord = value("EnableAutoSaveRecord", false).toBool();
+    NetworkOnly = value("NetworkOnly", false).toBool();
+    RecordSavePaths = value("RecordSavePaths", "records/").toString();
+
     NullificationCountDown = value("NullificationCountDown", 8).toInt();
     OperationTimeout = value("OperationTimeout", 15).toInt();
     OperationNoLimit = value("OperationNoLimit", false).toBool();
