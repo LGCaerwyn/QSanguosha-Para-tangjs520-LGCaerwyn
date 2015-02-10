@@ -2106,7 +2106,7 @@ void Room::prepareForStart() {
                     if (role == "lord" && !ServerInfo.EnableHegemony)
                         broadcastProperty(player, "role", "lord");
                     else {
-                        if (mode == "04_1v3" || mode == "04_boss" || mode == "08_defense")
+                        if (mode == "04_1v3" || mode == "04_boss" || mode == "08_defense" || mode == "11pk")
                             broadcastProperty(player, "role", role);
                         else
                             notifyProperty(player, player, "role");
@@ -2896,7 +2896,7 @@ void Room::assignRoles() {
 
         player->setRole(role);
         if ((role == "lord" && !ServerInfo.EnableHegemony)
-            || mode == "04_1v3" || mode == "04_boss" || mode == "08_defense")
+            || mode == "04_1v3" || mode == "04_boss" || mode == "08_defense" || mode == "11pk")
             broadcastProperty(player, "role", player->getRole());
         else
             notifyProperty(player, player, "role");
@@ -4630,6 +4630,9 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open) {
             doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
 
+        QVariant data = skill_name;
+        thread->trigger(EventAcquireSkill, this, player, data);
+
         QList<const Skill *> relatedSkills = Sanguosha->getRelatedSkills(skill_name);
         foreach (const Skill *related_skill, relatedSkills) {
             if (NULL != related_skill && !related_skill->isVisible()) {
@@ -4637,9 +4640,6 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open) {
             }
         }
     }
-
-    QVariant data = skill_name;
-    thread->trigger(EventAcquireSkill, this, player, data);
 }
 
 void Room::acquireSkill(ServerPlayer *player, const QString &skill_name, bool open) {
