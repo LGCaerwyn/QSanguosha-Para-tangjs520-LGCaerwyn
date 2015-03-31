@@ -12,6 +12,30 @@ void LuoyiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const
     source->setFlags("neoluoyi");
 }
 
+class NeoYingzi: public DrawCardsSkill {
+public:
+    NeoYingzi(): DrawCardsSkill("neoyingzi") {
+        frequency = Frequent;
+    }
+
+    virtual int getDrawNum(ServerPlayer *zhouyu, int n) const{
+        Room *room = zhouyu->getRoom();
+
+        if (!room->askForSkillInvoke(zhouyu, objectName())) return n;
+        int index = qrand() % 2 + 1;
+        if (!zhouyu->hasInnateSkill(objectName())) {
+            if (zhouyu->hasSkill("hunzi"))
+                index += 2;
+            else if (zhouyu->hasSkill("mouduan"))
+                index += 4;
+        }
+        room->broadcastSkillInvoke(objectName(), index);
+        room->sendCompulsoryTriggerLog(zhouyu, objectName());
+
+        return n + 1;
+    }
+};
+
 NeoFanjianCard::NeoFanjianCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
@@ -192,7 +216,7 @@ LingExPackage::LingExPackage()
     neo_caoren->addSkill(new NeoJushou);
 
     General *neo_zhouyu = new General(this, "neo_zhouyu", "wu", 3);
-    neo_zhouyu->addSkill("yingzi");
+    neo_zhouyu->addSkill(new NeoYingzi);
     neo_zhouyu->addSkill(new NeoFanjian);
 
     General *neo_gongsunzan = new General(this, "neo_gongsunzan", "qun");

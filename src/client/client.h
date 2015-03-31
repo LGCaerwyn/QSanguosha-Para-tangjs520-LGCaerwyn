@@ -176,7 +176,8 @@ public:
     void revealGeneral(const Json::Value &);
 
     void attachSkill(const Json::Value &skill);
-
+    void updateSkill(const Json::Value &);
+	
     virtual RoomState *getRoomState() { return &_m_roomState; }
     virtual Card *getCard(int cardId) const { return _m_roomState.getCard(cardId); }
 
@@ -344,6 +345,7 @@ signals:
     void assign_asked();
     void start_in_xs();
 
+    void skill_updated(const QString &skill_name);
     void general_choosed(const QString &name);
 };
 

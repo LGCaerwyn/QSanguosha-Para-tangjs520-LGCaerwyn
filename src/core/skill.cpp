@@ -99,6 +99,11 @@ void Skill::initMediaSource() {
     }
 }
 
+Skill::Frequency Skill::getFrequency(const Player *) const
+{
+    return frequency;
+}
+
 QDialog *Skill::getDialog() const{
     return NULL;
 }

@@ -120,7 +120,7 @@ Engine::Engine()
     modes["10pd"] = tr("10 players");
     modes["10p"] = tr("10 players (1 renegade)");
     modes["10pz"] = tr("10 players (0 renegade)");
-	modes["11pk"] = tr("11 playerz (10 renegade)");
+	modes["11pk"] = tr("11 players (10 renegade)");
 
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
 

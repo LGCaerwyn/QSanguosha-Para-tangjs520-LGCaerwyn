@@ -32,11 +32,25 @@ public:
     TaiwanSPPackage();
 };
 
+class TaiwanYJCMPackage : public Package{
+    Q_OBJECT
+
+public:
+    TaiwanYJCMPackage();
+};
+
 class MiscellaneousPackage: public Package {
     Q_OBJECT
 
 public:
     MiscellaneousPackage();
+};
+
+class JSPPackage : public Package {
+    Q_OBJECT
+
+public:
+    JSPPackage();
 };
 
 class Yongsi: public TriggerSkill {
@@ -167,6 +181,18 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class QujiCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QujiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class AocaiCard: public SkillCard {
     Q_OBJECT
 
@@ -218,6 +244,15 @@ public:
     Q_INVOKABLE SanyaoCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class JieyueCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JieyueCard();
+
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 

@@ -128,6 +128,7 @@ Client::Client(QObject *parent, Replayer *replayerPtr/* = 0*/)
     m_callbacks[S_COMMAND_TAKE_GENERAL] = &Client::takeGeneral;
     m_callbacks[S_COMMAND_RECOVER_GENERAL] = &Client::recoverGeneral;
     m_callbacks[S_COMMAND_REVEAL_GENERAL] = &Client::revealGeneral;
+    m_callbacks[S_COMMAND_UPDATE_SKILL] = &Client::updateSkill;
 
     m_noNullificationThisTime = false;
     m_noNullificationTrickName = ".";
@@ -2281,6 +2282,15 @@ void Client::setAvailableCards(const Json::Value &pile)
     QList<int> drawPile;
     tryParse(pile, drawPile);
     available_cards = drawPile;
+}
+
+
+void Client::updateSkill(const Json::Value &skill_name)
+{
+    if (!skill_name.isString())
+        return;
+
+    emit skill_updated(toQString(skill_name));
 }
 
 void Client::removeAnjiangNames(const Json::Value &arg)

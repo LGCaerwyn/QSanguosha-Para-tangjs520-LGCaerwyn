@@ -37,7 +37,7 @@ public:
 
     void initMediaSource();
 
-    Frequency getFrequency() const { return frequency; }
+    virtual Frequency getFrequency(const Player *target = NULL) const;
     QString getLimitMark() const { return limit_mark; }
     QStringList getSources() const { return sources; }
 

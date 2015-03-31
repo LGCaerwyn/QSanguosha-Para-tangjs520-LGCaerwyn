@@ -310,32 +310,32 @@
 <context>
     <name>Client</name>
     <message>
-        <location filename="../../src/client/client.cpp" line="922"/>
+        <location filename="../../src/client/client.cpp" line="926"/>
         <source>The argument (%1) of command %2 does not conform the format %3</source>
         <translation>命令 %2 的参数 (%1) 不符合其格式 %3</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="924"/>
+        <location filename="../../src/client/client.cpp" line="928"/>
         <source>Command format warning</source>
         <translation>命令格式警告</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1027"/>
+        <location filename="../../src/client/client.cpp" line="1031"/>
         <source>Do you want to invoke skill [%1] ?</source>
         <translation>你想发动技能“%1”吗?</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="972"/>
+        <location filename="../../src/client/client.cpp" line="976"/>
         <source>&lt;br/&gt; &lt;b&gt;Notice&lt;/b&gt;: %1&lt;br/&gt;</source>
         <translation>&lt;b&gt;操作提示&lt;/b&gt;: %1&lt;br/&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1064"/>
+        <location filename="../../src/client/client.cpp" line="1068"/>
         <source>&lt;br/&gt; &lt;b&gt;Notice&lt;/b&gt;: if all people on your side decides to surrender. You&apos;ll lose this game.</source>
         <translation>&lt;br/&gt; &lt;b&gt;警告&lt;/b&gt;: 如果你所在阵营里包括你在内的所有玩家表示投降，游戏将以你失败为结果立即结束。</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1291"/>
+        <location filename="../../src/client/client.cpp" line="1295"/>
         <source>Draw pile: &lt;b&gt;%1&lt;/b&gt;, discard pile: &lt;b&gt;%2&lt;/b&gt;, swap times: &lt;b&gt;%3&lt;/b&gt;</source>
         <translation>摸牌堆:&lt;b&gt;%1&lt;/b&gt;,弃牌堆:&lt;b&gt;%2&lt;/b&gt;,洗牌次数:&lt;b&gt;%3&lt;/b&gt;</translation>
     </message>
@@ -345,137 +345,137 @@
         <translation>&lt;p align = &quot;center&quot;&gt;游戏将在 &lt;b&gt;%1&lt;/b&gt; 秒后开始...&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1032"/>
+        <location filename="../../src/client/client.cpp" line="1036"/>
         <source>Do you want to invoke skill [%1] to %2 ?</source>
         <translation>你想对 %2 发动技能“%1”吗?</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1061"/>
+        <location filename="../../src/client/client.cpp" line="1065"/>
         <source>%1 initiated a vote for disadvataged side to claim capitulation. Click &quot;OK&quot; to surrender or &quot;Cancel&quot; to resist.</source>
         <translation>%1 要求所有人表决是否投降。 点【确定】表示你要投降，点【取消】拒绝向其他玩家投降。</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1076"/>
+        <location filename="../../src/client/client.cpp" line="1080"/>
         <source>Do you want to use the luck card?</source>
         <translation>你想使用手气卡吗？</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1116"/>
+        <location filename="../../src/client/client.cpp" line="1120"/>
         <source>Do you want to use nullification to trick card %1 from %2?</source>
         <translation>是否对 %2 的 %1 使用【无懈可击】？</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1121"/>
+        <location filename="../../src/client/client.cpp" line="1125"/>
         <source>%1 used trick card %2 to %3 &lt;br&gt;Do you want to use nullification?</source>
         <translation>%1 对 %3 使用锦囊【%2】 &lt;br&gt;是否使用【无懈可击】？</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1294"/>
+        <location filename="../../src/client/client.cpp" line="1298"/>
         <source>Level: &lt;b&gt;%1&lt;/b&gt;,</source>
         <translation>关卡: &lt;b&gt;%1&lt;/b&gt;,</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1303"/>
+        <location filename="../../src/client/client.cpp" line="1307"/>
         <source>Discard string is not well formatted!</source>
         <translation>弃牌字符串没有格式化好！</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1320"/>
+        <location filename="../../src/client/client.cpp" line="1324"/>
         <source>Please discard %1 card(s), include equip</source>
         <translation>请弃置 %1 张牌（包括装备区的牌）</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1323"/>
+        <location filename="../../src/client/client.cpp" line="1327"/>
         <source>Please discard %1 card(s), only hand cards is allowed</source>
         <translation>请弃置 %1 张手牌</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1346"/>
+        <location filename="../../src/client/client.cpp" line="1350"/>
         <source>Exchange string is not well formatted!</source>
         <translation>交换字符串没有格式化好！</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1363"/>
+        <location filename="../../src/client/client.cpp" line="1367"/>
         <source>Please give %1 cards to exchange</source>
         <translation>请选择用于交换的 %1 张手牌</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1459"/>
+        <location filename="../../src/client/client.cpp" line="1463"/>
         <source>Game is over now</source>
         <translation>游戏已经结束</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1462"/>
+        <location filename="../../src/client/client.cpp" line="1466"/>
         <source>Invalid signup string</source>
         <translation>无效的登录字符串</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1465"/>
+        <location filename="../../src/client/client.cpp" line="1469"/>
         <source>Your level is not enough</source>
         <translation>你的等级不够</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1468"/>
+        <location filename="../../src/client/client.cpp" line="1472"/>
         <source>Unknown warning: %1</source>
         <translation>未知警告: %1</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1684"/>
+        <location filename="../../src/client/client.cpp" line="1688"/>
         <source>You are dying, please provide %1 peach(es)(or analeptic) to save yourself</source>
         <translation>你处于濒死状态，请提供 %1 个【桃】（或【酒】）来自救</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1689"/>
+        <location filename="../../src/client/client.cpp" line="1693"/>
         <source>%1 is dying, please provide %2 peach(es) to save him</source>
         <translation>%1 处于濒死状态，请提供 %2 个【桃】来挽救该角色</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1729"/>
+        <location filename="../../src/client/client.cpp" line="1733"/>
         <source>%1 request you to show one hand card</source>
         <translation>%1 要求你展示一张手牌</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1881"/>
+        <location filename="../../src/client/client.cpp" line="1885"/>
         <source>Please play a card for pindian</source>
         <translation>请出一张卡牌用于拼点</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1885"/>
+        <location filename="../../src/client/client.cpp" line="1889"/>
         <source>%1 ask for you to play a card to pindian</source>
         <translation>%1 要求你出一张卡牌用于拼点</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1914"/>
+        <location filename="../../src/client/client.cpp" line="1918"/>
         <source>Please distribute %1 cards %2 as you wish</source>
         <translation>请将 %1 张牌任意分配给任意数量的%2角色</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1916"/>
+        <location filename="../../src/client/client.cpp" line="1920"/>
         <source>to another player</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1958"/>
+        <location filename="../../src/client/client.cpp" line="1962"/>
         <source>Please choose a player</source>
         <translation>请选择一名角色</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="2028"/>
+        <location filename="../../src/client/client.cpp" line="2032"/>
         <source>&lt;font color=&apos;red&apos;&gt;System: %1&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;red&apos;&gt;系统: %1&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="2046"/>
+        <location filename="../../src/client/client.cpp" line="2050"/>
         <source>&lt;font color=&apos;%1&apos;&gt;[%2] said: %3 &lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="2293"/>
+        <location filename="../../src/client/client.cpp" line="2297"/>
         <source>You have been kicked out of the room by owner</source>
         <translation>你已被房主踢出房间</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="2296"/>
+        <location filename="../../src/client/client.cpp" line="2300"/>
         <source>Connection failed, error code = %1
  reason:
  %2</source>
@@ -485,9 +485,9 @@
     </message>
     <message>
         <location filename="../../src/client/client.cpp" line="300"/>
-        <location filename="../../src/client/client.cpp" line="1303"/>
-        <location filename="../../src/client/client.cpp" line="1346"/>
-        <location filename="../../src/client/client.cpp" line="1470"/>
+        <location filename="../../src/client/client.cpp" line="1307"/>
+        <location filename="../../src/client/client.cpp" line="1350"/>
+        <location filename="../../src/client/client.cpp" line="1474"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -1323,52 +1323,52 @@
 <context>
     <name>Dashboard</name>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="107"/>
+        <location filename="../../src/ui/dashboard.cpp" line="109"/>
         <source>Trusting ...</source>
         <translation>托管中 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="576"/>
+        <location filename="../../src/ui/dashboard.cpp" line="577"/>
         <source>Sort handcards</source>
         <translation>整理手牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="577"/>
+        <location filename="../../src/ui/dashboard.cpp" line="578"/>
         <source>Sort by type</source>
         <translation>按类型排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="579"/>
+        <location filename="../../src/ui/dashboard.cpp" line="580"/>
         <source>Sort by suit</source>
         <translation>按花色排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="581"/>
+        <location filename="../../src/ui/dashboard.cpp" line="582"/>
         <source>Sort by number</source>
         <translation>按点数排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="588"/>
+        <location filename="../../src/ui/dashboard.cpp" line="589"/>
         <source>Reverse selection</source>
         <translation>反选</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="961"/>
+        <location filename="../../src/ui/dashboard.cpp" line="960"/>
         <source>Shefu</source>
         <translation>设伏</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="976"/>
+        <location filename="../../src/ui/dashboard.cpp" line="975"/>
         <source>Shefu Ask All</source>
         <translation>所有牌均询问</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="981"/>
+        <location filename="../../src/ui/dashboard.cpp" line="980"/>
         <source>Shefu Ask Necessary</source>
         <translation>只询问被记录的牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="986"/>
+        <location filename="../../src/ui/dashboard.cpp" line="985"/>
         <source>Shefu Ask None</source>
         <translation>所有牌均不询问</translation>
     </message>
@@ -1568,8 +1568,8 @@
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="123"/>
-        <source>11 playerz (10 renegade)</source>
-        <translation>11 人局 [10内奸]</translation>
+        <source>11 players (10 renegade)</source>
+        <translation>10 人局 [10内奸]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="181"/>
