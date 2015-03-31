@@ -25,6 +25,8 @@ private:
     Ui::ConfigDialog *ui;
     void showFont(QLineEdit *lineedit, const QFont &font);
 
+    void setBackground(const QVariant &path);
+
     static QString m_defaultMusicPath;
 
 private slots:

@@ -122,6 +122,7 @@ void Settings::init() {
     EnableIntellectualSelection = value("EnableIntellectualSelection", true).toBool();
     EnableDoubleClick = value("EnableDoubleClick", false).toBool();
     EnableSuperDrag = value("EnableSuperDrag", false).toBool();
+    EnableAutoBackgroundChange = value("EnableAutoBackgroundChange", true).toBool();
 
     AutoCloseCardContainerDelaySeconds = value("AutoCloseCardContainerDelaySeconds", 0).toInt();
     RandomPlayBGM = value("RandomPlayBGM", false).toBool();

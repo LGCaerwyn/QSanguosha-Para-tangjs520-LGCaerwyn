@@ -303,6 +303,10 @@ private:
 
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
 
+	QGraphicsPixmapItem *m_tableBg;
+    int m_tablew;
+    int m_tableh;
+
     //新增一个计时器Label，用于显示游戏耗时
     TimerLabel *m_timerLabel;
 

@@ -309,6 +309,11 @@ RoomScene::RoomScene(QMainWindow *mainWindow)
     addItem(prompt_box_widget);
     prompt_box_widget->setDocument(ClientInstance->getPromptDoc());
 
+    m_tableBg = new QGraphicsPixmapItem;
+    m_tableBg->setZValue(-100000);
+
+    addItem(m_tableBg);
+
     QHBoxLayout *skill_dock_layout = new QHBoxLayout;
     QMargins margins = skill_dock_layout->contentsMargins();
     margins.setTop(0);
@@ -834,8 +839,20 @@ void RoomScene::adjustItems() {
     if (enemy_box)
         enemy_box->setPos(padding * 2, padding * 2);
 
+    //updateTable();
+    //updateRolesBox();
+
+    //padding -= _m_roomLayout->m_photoRoomPadding;
+    m_tablew = displayRegion.width();
+    m_tableh = displayRegion.height();
+    QPixmap tableBg = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_TABLE_BG)
+        .scaled(m_tablew, m_tableh, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_tableh -= _m_roomLayout->m_photoDashboardPadding;
+    m_tableBg->setPos(0, 0);
+    m_tableBg->setPixmap(tableBg);
     updateTable();
     updateRolesBox();
+    setChatBoxVisible(chat_box_widget->isVisible());
 
     QMapIterator<QString, BubbleChatBox *> iter(m_bubbleChatBoxs);
     while (iter.hasNext()) {
@@ -3868,7 +3885,7 @@ void KOFOrderBox::killPlayer(const QString &general_name) {
 
 void RoomScene::onGameStart() {
     _cancelAllFocus();
-
+    
     if (ServerInfo.EnableHegemony) {
         foreach (Photo *photo, photos) {
             photo->updateAvatarTooltip();
@@ -3918,6 +3935,36 @@ void RoomScene::onGameStart() {
     }
 #endif
     game_started = true;
+
+    // for tablebg change
+    if (Config.EnableAutoBackgroundChange && Self != NULL) {
+        const Player *the_player = NULL;
+        if (isNormalGameMode(ServerInfo.GameMode)) {
+            QList<const Player *> sib = Self->getSiblings();
+            sib << Self;
+            foreach (const Player *p, sib) {
+                if (p->isLord()) {
+                    the_player = p;
+                    break;
+                }
+            }
+        }
+
+        if (the_player == NULL)
+            the_player = Self;
+
+        QString kingdom = the_player->getKingdom();
+        if (Sanguosha->getKingdoms().contains(kingdom)) {
+            QPixmap pixmap = G_ROOM_SKIN.getPixmap("tableBg" + kingdom);
+            if (pixmap.width() == 1 || pixmap.height() == 1) {
+                // we treat this condition as error and do not use it
+            } else {
+                pixmap = pixmap.scaled(m_tablew, m_tableh + _m_roomLayout->m_photoDashboardPadding, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                m_tableBg->setPixmap(pixmap);
+            }
+        }
+    }
+    // end
 }
 
 void RoomScene::freeze() {

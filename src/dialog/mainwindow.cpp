@@ -68,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_cardOverview = NULL;
 
     ui->setupUi(this);
+
+    setWindowTitle(tr("Sanguosha") + " " + Sanguosha->getVersionNumber());
+
     scene = NULL;
 
     connection_dialog = new ConnectionDialog(this);

@@ -87,6 +87,7 @@ public:
     bool EnableIntellectualSelection;
     bool EnableDoubleClick;
     bool EnableSuperDrag;
+    bool EnableAutoBackgroundChange;
 	bool EnableAutoSaveRecord;
     bool NetworkOnly;
 

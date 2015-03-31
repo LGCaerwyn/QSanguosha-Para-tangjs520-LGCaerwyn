@@ -46,6 +46,12 @@
 "magatamas3": "image/system/magatamas/3.png",
 "magatamas4": "image/system/magatamas/4.png",
 "magatamas5": "image/system/magatamas/5.png",
+"tableBg": "image/system/backdrop/tableBg.jpg",
+"tableBgwei": "image/system/backdrop/wei.jpg",
+"tableBgshu": "image/system/backdrop/shu.jpg",
+"tableBgwu" : "image/system/backdrop/wu.jpg",
+"tableBgqun": "image/system/backdrop/qun.jpg",
+"tableBggod": "image/system/backdrop/god.jpg",
 "photoExtraSkillBg": "image/system/huashenSkillBg.png",
 "dashboardExtraSkillBg": "image/system/huashenSkillBg.png",
 

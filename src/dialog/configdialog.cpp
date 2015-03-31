@@ -52,6 +52,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->superDragCheckBox->setChecked(Config.EnableSuperDrag);
     ui->secondsSpinBox->setValue(Config.AutoCloseCardContainerDelaySeconds);
     ui->bubbleChatBoxDelaySpinBox->setValue(Config.BubbleChatBoxDelaySeconds);
+    ui->backgroundChangeCheckBox->setChecked(Config.EnableAutoBackgroundChange);
 //×Ô¶¯±£´æÂ¼Ïñ
 	ui->enableAutoSaveCheckBox->setChecked(Config.EnableAutoSaveRecord);
     ui->networkOnlyCheckBox->setChecked(Config.NetworkOnly);
@@ -239,6 +240,8 @@ void ConfigDialog::saveConfig() {
     Config.setValue("ShowMsgBoxWhenExit", Config.ShowMsgBoxWhenExit);
     Config.BubbleChatBoxDelaySeconds = ui->bubbleChatBoxDelaySpinBox->value();
     Config.setValue("BubbleChatBoxDelaySeconds", Config.BubbleChatBoxDelaySeconds);
+    Config.EnableAutoBackgroundChange = ui->backgroundChangeCheckBox->isChecked();
+    Config.setValue("EnableAutoBackgroundChange", Config.EnableAutoBackgroundChange);
 //Â¼Ïñ
 	Config.EnableAutoSaveRecord = ui->enableAutoSaveCheckBox->isChecked();
     Config.setValue("EnableAutoSaveRecord", Config.EnableAutoSaveRecord);

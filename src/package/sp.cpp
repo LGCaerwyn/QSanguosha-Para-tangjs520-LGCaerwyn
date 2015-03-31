@@ -3449,7 +3449,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         room->broadcastSkillInvoke(objectName());
-        room->doLightbox("$FengliangAnimate");
+        room->doLightbox("jsp_jiangwei");
 
         room->addPlayerMark(player, objectName(), 1);
         if (room->changeMaxHpForAwakenSkill(player) && player->getMark(objectName()) > 0) {
