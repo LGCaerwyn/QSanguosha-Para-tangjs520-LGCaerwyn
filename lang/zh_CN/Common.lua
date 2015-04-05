@@ -1,4 +1,4 @@
-CommonTranslationTable = {
+﻿CommonTranslationTable = {
 	["lord"] = "主公",
 	["loyalist"] = "忠臣",
 	["rebel"] = "反贼",
@@ -220,6 +220,7 @@ CommonTranslationTable = {
 	["CAPITAL(9)"] = "九",
 	["CAPITAL(10)"] = "十",
 	["CAPITAL(11)"] = "十一",
+	["CAPITAL(12)"] = "十二",
 	
 	["$gamestart"] = "image=image/animate/gamestart.png",
 	["$game-win"] = "image=image/animate/game-win.png",

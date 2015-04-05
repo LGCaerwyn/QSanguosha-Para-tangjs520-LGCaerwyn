@@ -714,7 +714,8 @@ void MainWindow::on_actionRole_assign_table_triggered()
          << "5 1 1 2 1" << "6 1 1 3 1" << "6d 1 1 2 2"
          << "7 1 2 3 1" << "8 1 2 4 1" << "8d 1 2 3 2"
          << "8z 1 3 4 0" << "9 1 3 4 1" << "10 1 3 4 2"
-         << "10z 1 4 5 0" << "10o 1 3 5 1";
+         << "10z 1 4 5 0" << "10o 1 3 5 1" << "11 1 0 0 10" 
+		 << "12 1 3 5 3";
 
     foreach (QString row, rows) {
         QStringList cells = row.split(" ");
@@ -742,7 +743,7 @@ void MainWindow::on_actionRole_assign_table_triggered()
 
     content = QString("<table border='1'>%1</table").arg(content);
 
-    Window *window = new Window(title, QSize(240, 450), QString(), true);
+    Window *window = new Window(title, QSize(240, 500), QString(), true);
     scene->addItem(window);
 
     window->addContent(content);

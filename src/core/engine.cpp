@@ -121,6 +121,7 @@ Engine::Engine()
     modes["10p"] = tr("10 players (1 renegade)");
     modes["10pz"] = tr("10 players (0 renegade)");
 	modes["11pk"] = tr("11 players (10 renegade)");
+	modes["12p"] = tr("12 players");
 
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
 
@@ -833,6 +834,8 @@ QString Engine::getRoles(const QString &mode) const{
         return "FFFFCCCC";
     } else if (mode == "11pk") {
 		return "ZNNNNNNNNNN";
+    } else if (mode == "12p") {
+		return "ZCCCFFFFFNNN";
     }
 
     if (modes.contains(mode) || isNormalGameMode(mode)) { // hidden pz settings?
@@ -849,6 +852,8 @@ QString Engine::getRoles(const QString &mode) const{
             "ZCCFFFFN", // 8
             "ZCCCFFFFN", // 9
             "ZCCCFFFFFN", // 10
+            //"ZNNNNNNNNNN", // 11
+			//"ZCCCFFFFFNNN", // 12
         };
 
         static const char *table2[] = {

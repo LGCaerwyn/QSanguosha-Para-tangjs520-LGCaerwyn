@@ -13,7 +13,7 @@
     "chatTextBoxHeight": 35,
     "logBoxHeightPercentage": 0.6,
     "chatBoxHeightPercentage": 0.4,
-    "infoPlaneWidthPercentage": 0.17,
+    //"infoPlaneWidthPercentage": 0.17,
     "photoRoomPadding": 6,
     "photoDashboardPadding": 10,
     "photoHDistance": 32,
