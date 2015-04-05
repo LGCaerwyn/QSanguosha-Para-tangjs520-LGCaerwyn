@@ -14,6 +14,7 @@
     "logBoxHeightPercentage": 0.6,
     "chatBoxHeightPercentage": 0.4,
     //"infoPlaneWidthPercentage": 0.17,
+	"infoPlaneWidthPercentage": 0.18, // for rolebox of 12players
     "photoRoomPadding": 6,
     "photoDashboardPadding": 10,
     "photoHDistance": 32,

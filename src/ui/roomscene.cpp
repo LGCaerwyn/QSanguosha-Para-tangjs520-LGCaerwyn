@@ -845,6 +845,7 @@ void RoomScene::adjustItems() {
     //padding -= _m_roomLayout->m_photoRoomPadding;
     m_tablew = displayRegion.width();
     m_tableh = displayRegion.height();
+
     QPixmap tableBg = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_TABLE_BG)
         .scaled(m_tablew, m_tableh, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     m_tableh -= _m_roomLayout->m_photoDashboardPadding;
@@ -921,7 +922,7 @@ void RoomScene::updateTable() {
     // ------------------------
     // region 5 = 0 + 3, region 6 = 2 + 4, region 7 = 0 + 1 + 2
 
-    static int regularSeatIndex[][10] = {
+    static int regularSeatIndex[][11] = {
         {1},
         {5, 6},
         {5, 1, 6},
@@ -932,6 +933,7 @@ void RoomScene::updateTable() {
         {3, 3, 7, 7, 7, 7, 4, 4},
         {3, 3, 7, 7, 7, 7, 7, 4, 4},
 		{3, 3, 7, 7, 7, 7, 7, 7, 4, 4},
+		{5, 5, 5, 1, 1, 1, 1, 1, 6, 6, 6},
     };
     static int hulaoSeatIndex[][3] = {
         {1, 1, 1}, // if self is shenlvbu
