@@ -587,7 +587,7 @@ void MainWindow::on_actionAbout_triggered() {
         .arg(compileDate.toString(Qt::ISODate))
         .arg(time));
 
-    QString project_url = "https://github.com/tangjs520/QSanguosha-Para-tangjs520-LGCerwyn";
+    QString project_url = "https://github.com/LGCaerwyn/QSanguosha-Para-tangjs520-LGCaerwyn";
     content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
 
     QString forum_url = "http://qsanguosha.org";

@@ -1,8 +1,8 @@
--- this script to store the basic configuration for game program itself
+﻿-- this script to store the basic configuration for game program itself
 -- and it is a little different from config.ini
 
 config = {
-	version = "20140913",
+	version = "20150401",
 	version_name = "V2",
 	mod_name = "Para",
 	big_font = 56,
@@ -38,6 +38,7 @@ config = {
 		"New3v3_2013Card",
 		"New1v1Card",
 		--"LingCards",
+		"excard",
 
 		"Standard",
 		"Wind",
@@ -55,16 +56,20 @@ config = {
 		"Special1v1",
 		"Special1v1Ext",
 		"SP",
+		"JSP",
 		"OL",
 		"TaiwanSP",
+		"TaiwanYJCM",
 		"Miscellaneous",
 		"BGM",
 		"BGMDIY",
-		"Ling",
+		--"Ling",
 		"Hegemony",
 		"HFormation",
 		"HMomentum",
 		"HegemonySP",
+		"Yitian",
+		"Wisdom",
 		"NostalStandard",
 		"NostalWind",
 		"NostalYJCM",
