@@ -1286,6 +1286,46 @@ end
 
 sgs.ai_card_intention.QingyiCard = sgs.ai_card_intention.Slash
 
+--OL专属--
+
+--李丰
+--屯储
+--player->askForSkillInvoke("tunchu")
+sgs.ai_skill_invoke["tunchu"] = function(self, data)
+	if #self.enemies == 0 then
+		return true
+	end
+	local callback = sgs.ai_skill_choice.jiangchi
+	local choice = callback(self, "jiang+chi+cancel")
+	if choice == "jiang" then
+		return true
+	end
+	return false
+end
+--room->askForExchange(player, "tunchu", 1, 1, false, "@tunchu-put")
+--输粮
+--room->askForUseCard(p, "@@shuliang", "@shuliang", -1, Card::MethodNone)
+sgs.ai_skill_use["@@shuliang"] = function(self, prompt, method)
+	local target = self.room:getCurrent()
+	if target and self:isFriend(target) then
+		return "@ShuliangCard=."
+	end
+	return "."
+end
+
+--朱灵
+--战意
+--ZhanyiCard:Play
+--ZhanyiViewAsBasicCard:Response
+--ZhanyiViewAsBasicCard:Play
+--room->askForDiscard(p, "zhanyi_equip", 2, 2, false, true, "@zhanyiequip_discard")
+--room->askForChoice(zhuling, "zhanyi_slash", guhuo_list.join("+"))
+--room->askForChoice(zhuling, "zhanyi_saveself", guhuo_list.join("+"))
+
+--刘表
+--自守
+--player->askForSkillInvoke(this)
+sgs.ai_skill_invoke["olzishou"] = sgs.ai_skill_invoke["zishou"]
 
 --[[
 魅步: 一名其他角色的出牌阶段开始时，若你不在其攻击范围内，你可以令该角色的锦囊牌均视为【杀】,直到回合结束：
