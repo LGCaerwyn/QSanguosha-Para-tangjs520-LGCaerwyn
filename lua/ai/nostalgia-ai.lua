@@ -435,13 +435,19 @@ function sgs.ai_cardneed.nosqianxi(to, card, self)
 	return isCard("Slash", card, to) and getKnownCard(to, self.player, "Slash", true) == 0
 end
 
-sgs.ai_skill_invoke.noschengxiang = sgs.ai_skill_invoke.chengxiang
-sgs.ai_skill_askforag.noschengxiang = sgs.ai_skill_askforag.chengxiang
+sgs.ai_skill_invoke.noschengxiang = function(self, data)
+	return not hasManjuanEffect(self.player)
+end
+
+sgs.ai_skill_askforag.noschengxiang = function(self, card_ids)
+	return self:askForAG(card_ids, false, "dummyreason")
+end
 
 function sgs.ai_cardsview_valuable.nosrenxin(self, class_name, player)
 	if class_name == "Peach" and not player:isKongcheng() then
 		local dying = player:getRoom():getCurrentDyingPlayer()
 		if not dying or self:isEnemy(dying, player) or dying:objectName() == player:objectName() then return nil end
+		if dying:isLord() and self:isFriend(dying, player) then return "@NosRenxinCard=." end
 		if hasManjuanEffect(dying) then
 			local peach_num = 0
 			if player:getMark("Global_PreventPeach") == 0 then
@@ -453,8 +459,8 @@ function sgs.ai_cardsview_valuable.nosrenxin(self, class_name, player)
 		end
 		if self:playerGetRound(dying) < self:playerGetRound(self.player) and dying:getHp() < 0 then return nil end
 		if not player:faceUp() then
-			if player:getHp() < 2 and (getCardsNum("Jink", player, self.player) > 0 or getCardsNum("Analeptic", player, self.player) > 0) and not dying:isLord() then return nil end
-			return "@RenxinCard=."
+			if player:getHp() < 2 and (getCardsNum("Jink", player, self.player) > 0 or getCardsNum("Analeptic", player, self.player) > 0) then return nil end
+			return "@NosRenxinCard=."
 		else
 			if dying:getMark("Global_PreventPeach") == 0 then
 				for _, c in sgs.qlist(player:getHandcards()) do
@@ -471,8 +477,9 @@ function sgs.ai_cardsview.nosrenxin(self, class_name, player)
 	if class_name == "Peach" and not player:isKongcheng() then
 		local dying = player:getRoom():getCurrentDyingPlayer()
 		if not dying or self:isEnemy(dying, player) or dying:objectName() == player:objectName() then return nil end
-		if player:getHp() < 2 and (getCardsNum("Jink", player, self.player) > 0 or getCardsNum("Analeptic", player, self.player) > 0) and not dying:isLord() then return nil end
-		if not self:isWeak(player) then return "@RenxinCard=." end
+		if dying:isLord() and self:isFriend(lord, player) then return "@NosRenxinCard=." end
+		if player:getHp() < 2 and (getCardsNum("Jink", player, self.player) > 0 or getCardsNum("Analeptic", player, self.player) > 0) then return nil end
+		if not self:isWeak(player) then return "@NosRenxinCard=." end
 		return nil
 	end
 end
@@ -485,8 +492,11 @@ sgs.ai_skill_invoke.nosdanshou = function(self, data)
 	if phase < sgs.Player_Play then
 		return self:willSkipPlayPhase()
 	elseif phase == sgs.Player_Play then
-		if self.player:isChained() and (damage.chain or self.room:getTag("is_chained"):toInt() > 0) and self:isGoodChainTarget(self.player) then
-			return false
+		if damage.chain or self.room:getTag("is_chained"):toInt() > 0 then
+			for _, ap in sgs.qlist(self.room:getAllPlayers()) do
+				if ap:isChained() and self:isGoodChainTarget(ap, self.player, damage.nature, damage.damage, damage.card) then return false end
+			end
+			return true
 		elseif self:getOverflow() >= 2 then
 			return true
 		else
@@ -532,15 +542,13 @@ sgs.ai_skill_invoke.nosdanshou = function(self, data)
 		local current = self.room:getCurrent()
 		if not current or not current:isAlive() or current:getPhase() == sgs.Player_NotActive then return true end
 		if self:isFriend(current) then
-			if self:getOverflow(current) >= 2 then return true end
-			if current:getHandcardNum() < 2 then return self:isEnemy(damage.to) and damage.to:hasSkills(sgs.masochism_skill) end
-			return false
+			return self:getOverflow(current) >= 2
 		else
 			if self:getOverflow(current) <= 2 then
 				return true
 			else
 				local threat = getCardsNum("Duel", current, self.player) + getCardsNum("AOE", current, self.player)
-				if self:slashIsAvailable(current) and getCardsNum("Slash", current, self.player) > 0 then threat = threat + math.min(1, getCardsNum("Slash", current, player)) end
+				if self:slashIsAvailable(current) and getCardsNum("Slash", current, self.player) > 0 then threat = threat + math.min(1, getCardsNum("Slash", current, self.player)) end
 				return threat >= 1
 			end
 		end
@@ -562,7 +570,7 @@ end
 sgs.ai_playerchosen_intention.nosmieji = -50
 
 sgs.ai_skill_use["@@nosmieji"] = function(self, prompt) -- extra target for Collateral
-	local collateral = sgs.cloneCard("collateral", sgs.Card_NoSuitBlack)
+	local collateral = sgs.Sanguosha:cloneCard("collateral", sgs.Card_NoSuitBlack)
 	local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {} }
 	dummy_use.current_targets = self.player:property("extra_collateral_current_targets"):toString():split("+")
 	self:useCardCollateral(collateral, dummy_use)
@@ -573,13 +581,15 @@ sgs.ai_skill_use["@@nosmieji"] = function(self, prompt) -- extra target for Coll
 	end
 end
 
+sgs.ai_card_intention.ExtraCollateralCard = 0
+
 local function getNosFenchengValue(self, player)
 	if not self:damageIsEffective(player, sgs.DamageStruct_Fire, self.player) then return 0 end
 	if not player:canDiscard(player, "he") then return self:isWeak(player) and 1.5 or 1 end
-	if self.player:hasSkill("nosjuece") and self:isEnemy(player)
+	if self.player:hasSkill("juece|nosjuece") and self:isEnemy(player)
 		and player:getEquips():isEmpty() and player:getHandcardNum() == 1 and not self:needKongcheng(player)
-		and not (player:isChained() or not self:isGoodChainTarget(player, self.player, sgs.DamageStruct_Fire)) then return self:isWeak(player) and 1.5 or 1 end
-	if self:isGoodChainTarget(player, self.player, sgs.DamageStruct_Fire) or self:getDamagedEffects(player, self.player) or self:needToLoseHp(player, self.player) then return -0.1 end
+		and not (player:isChained() or not self:isGoodChainTarget(player, self.player)) then return self:isWeak(player) and 1.5 or 1 end
+	if self:isGoodChainTarget(player, self.player) or self:getDamagedEffects(player, self.player) or self:needToLoseHp(player, self.player) then return -0.1 end
 
 	local num = player:getEquips():length() - player:getHandcardNum()
 	if num < 0 then
@@ -618,42 +628,40 @@ nosfencheng_skill = {}
 nosfencheng_skill.name = "nosfencheng"
 table.insert(sgs.ai_skills, nosfencheng_skill)
 nosfencheng_skill.getTurnUseCard = function(self)
-	if self.player:getMark("@nosburn") <= 0 or sgs.turncount <= 1 then return end
+	if self.player:getMark("@burn") <= 0 or sgs.turncount <= 1 then return end
 	local lord = self.room:getLord()
 	if (self.role == "loyalist" or self.role == "renegade") and (sgs.isLordInDanger() or (lord and self:isWeak(lord))) then return end
 	local value = 0
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if self:isFriend(player) then value = value - getFenchengValue(self, player)
-		elseif self:isEnemy(player) then value = value + getFenchengValue(self, player) end
+		if self:isFriend(player) then value = value - getNosFenchengValue(self, player)
+		elseif self:isEnemy(player) then value = value + getNosFenchengValue(self, player) end
 	end
 	if #self.friends_noself >= #self.enemies and value > 0 then return sgs.Card_Parse("@NosFenchengCard=.") end
 	local ratio = value / (#self.enemies - #self.friends_noself)
 	if ratio >= 0.4 then return sgs.Card_Parse("@NosFenchengCard=.") end
 end
 
-sgs.ai_skill_use_func.NosFenchengCard = function(card, use, self)
+sgs.ai_skill_use_func.FenchengCard = function(card, use, self)
 	use.card = card
 end
 
 sgs.ai_skill_discard.nosfencheng = function(self, discard_num, min_num, optional, include_equip)
 	if discard_num == 1 and self:needToThrowArmor() then return { self.player:getArmor():getEffectiveId() } end
 	local liru = self.room:getCurrent()
-	local nosjuece_effect
-	if liru and liru:isAlive() and liru:hasSkill("nosjuece") then nosjuece_effect = true end
+	local juece_effect
+	if liru and liru:isAlive() and liru:hasSkill("juece|nosjuece") then juece_effect = true end
 	if not self:damageIsEffective(self.player, sgs.DamageStruct_Fire, liru) then return {} end
-	if nosjuece_effect and self:isEnemy(liru) and self.player:getEquips():isEmpty() and self.player:getHandcardNum() == 1 and not self:needKongcheng()
-		and not (self.player:isChained() or not self:isGoodChainTarget(self.player, liru, sgs.DamageStruct_Fire)) then return {} end
-	if self:isGoodChainTarget(self.player, liru, sgs.DamageStruct_Fire) or self:getDamagedEffects(self.player, liru) or self:needToLoseHp(self.player, liru) then return {} end
+	if juece_effect and self:isEnemy(liru) and self.player:getEquips():isEmpty() and self.player:getHandcardNum() == 1 and not self:needKongcheng()
+		and not (self.player:isChained() or not self:isGoodChainTarget(self.player, liru)) then return {} end
+	if self:isGoodChainTarget(self.player, liru) or self:getDamagedEffects(self.player, liru) or self:needToLoseHp(self.player, liru) then return {} end
 	local to_discard = self:askForDiscard("dummyreason", discard_num, min_num, false, include_equip)
 	if #to_discard < discard_num then return {} end
 	for _, id in ipairs(to_discard) do
-		local c = sgs.Sanguosha:getCard(id)
-		if isCard("Peach", c, self.player) then return {}
-		elseif self.player:getHp() == 1 and isCard("Analeptic", c, self.player) then return {}
+		if isCard("Peach", sgs.Sanguosha:getCard(id), self.player) then return {}
+		elseif 1 == self.player:getHp() and isCard("Analeptic", sgs.Sanguosha:getCard(id), self.player) then return {}
 		end
 	end
-
-	if not nosjuece_effect then return to_discard
+	if not juece_effect then return to_discard
 	else
 		if self.player:isKongcheng() then return to_discard end
 		for _, id in sgs.qlist(self.player:handCards()) do
@@ -674,7 +682,7 @@ sgs.ai_skill_discard.nosfencheng = function(self, discard_num, min_num, optional
 				if self:isWeak() then table.insert(to_discard, def_id)
 				else return {} end
 			elseif self.player:getArmor() and not table.contains(to_discard, arm_id) then
-				if self:isWeak() or (not liru:hasSkill("jueqing") and (self.player:hasArmorEffect("vine") or self.player:getMark("@gale") > 0)) then table.insert(to_discard, arm_id)
+				if self:isWeak() or (not liru:hasSkill("jueqing") and self.player:hasArmorEffect("vine")) then table.insert(to_discard, arm_id)
 				else return {} end
 			end
 			if #to_discard == discard_num + 1 then table.removeOne(to_discard, cards[1]:getEffectiveId()) end
@@ -723,7 +731,7 @@ sgs.ai_skill_playerchosen.nosqiuyuan = function(self, targets)
 	for _, p in ipairs(targetlist) do
 		if self:isFriend(p) then
 			if (p:hasSkill("kongcheng") and p:getHandcardNum() == 1) or (p:getCardCount() >= 2 and self:canLiuli(p, self.enemies)) then return p
-			elseif not friend and getCardsNum("Jink", p, player) >= 1 then friend = p end
+			elseif not friend and getCardsNum("Jink", p, self.player) >= 1 then friend = p end
 		end
 	end
 	return friend
@@ -739,6 +747,7 @@ sgs.ai_skill_cardask["@nosqiuyuan-give"] = function(self, data, pattern, target)
 			return "$" .. card:getEffectiveId()
 		end
 	end
+    if (pattern == "Jink") then return "." end
 	for _, card in ipairs(cards) do
 		if not self:isValuableCard(card) and self:getKeepValue(card) < 5 then return "$" .. card:getEffectiveId() end
 	end
@@ -751,6 +760,24 @@ function sgs.ai_slash_prohibit.nosqiuyuan(self, from, to)
 	for _, friend in ipairs(self:getFriendsNoself(from)) do
 		if not to:isKongcheng() and not (to:getHandcardNum() == 1 and (to:hasSkill("kongcheng") or (to:hasSkill("zhiji") and to:getMark("zhiji") == 0))) then return true end
 	end
+end
+
+function SmartAI:hasNosQiuyuanEffect(from, to)
+	if not from or not to:hasSkill("nosqiuyuan") then return false end
+	if getKnownCard(to, self.player, "Jink", true, "he") >= 1 then
+		for _, target in ipairs(self:getEnemies(to)) do
+			if not target:isKongcheng() and not (target:getHandcardNum() == 1 and self:needKongcheng(target, true)) then
+				return true
+			end
+		end
+		for _, friend in ipairs(self:getFriends(to)) do
+			if (friend:getHandcardNum() == 1 and self:needKongcheng(friend, true))
+					and not (friend:isKongcheng() and to and from) then
+				return true
+			end
+		end
+	end
+	return
 end
 
 sgs.ai_skill_invoke.noszhenggong = function(self, data)
