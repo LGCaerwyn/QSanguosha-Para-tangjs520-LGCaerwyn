@@ -4487,7 +4487,7 @@ OLPackage::OLPackage()
     ol_fazheng->addSkill("enyuan");
     ol_fazheng->addSkill("xuanhuo");
 
-    General *ol_masu = new General(this, "ol_masu", "shu", 3, true, true);
+    General *ol_masu = new General(this, "ol_masu", "shu", 3);
     ol_masu->addSkill(new Sanyao);
     ol_masu->addSkill(new Zhiman);
 
@@ -4495,7 +4495,7 @@ OLPackage::OLPackage()
     ol_xushu->addSkill("wuyan");
     ol_xushu->addSkill("jujian");
 
-    General *ol_guanxingzhangbao = new General(this, "ol_guanxingzhangbao", "shu", 4, true, true);
+    General *ol_guanxingzhangbao = new General(this, "ol_guanxingzhangbao", "shu", 4);
     ol_guanxingzhangbao->addSkill("fuhun");
 
     General *ol_madai = new General(this, "ol_madai", "shu", 4, true, true);
@@ -4506,10 +4506,10 @@ OLPackage::OLPackage()
     ol_wangyi->addSkill("zhenlie");
     ol_wangyi->addSkill("miji");
 
-	General *ol_yujin = new General(this, "ol_yujin", "wei", 4, true, true);
+	General *ol_yujin = new General(this, "ol_yujin", "wei", 4);
     ol_yujin->addSkill(new Jieyue);
 
-    General *ol_liubiao = new General(this, "ol_liubiao", "qun", 3, true, true);
+    General *ol_liubiao = new General(this, "ol_liubiao", "qun", 3);
     ol_liubiao->addSkill(new OlZishou);
     ol_liubiao->addSkill(new OlZishouProhibit);
     ol_liubiao->addSkill("zongshi");
