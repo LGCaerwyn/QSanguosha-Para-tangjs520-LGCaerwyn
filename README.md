@@ -1,6 +1,7 @@
-QSanguosha-Para-tangjs520-LGCaerwyn
+QSanguosha-V2-MOD
 ===================================
 The code is merged from:
+https://github.com/Mogara/QSanguosha-v2
 https://github.com/Paracel/QSanguosha-Para
 https://github.com/tangjs520/QSanguosha-Para-tangjs520
 
